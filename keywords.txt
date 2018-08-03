@@ -243,7 +243,7 @@ sensorReadRaw	KEYWORD2
 sensorSetMode	KEYWORD2
 setActive	KEYWORD2
 setAddress	KEYWORD2
-setAmbient	KEYWROD2
+setAmbient	KEYWORD2
 setAnalogMode	KEYWORD2
 setApdaOff	KEYWORD2
 setApdaOn	KEYWORD2
