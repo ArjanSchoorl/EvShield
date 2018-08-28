@@ -1,6 +1,10 @@
 # EvShield
 Library for NXT/EV3 Shield for Arduino
 
+# V1.2
+- Combined EvShieldAGS.h, EVSHieldI2C.h and EVShieldUART.h with EVShield.h
+- Started with EV3 Sensors
+
 # V1.1
 - Added NXT VoltMeter from Mindsensor to NXT Library
 - Added NXT ThermoMeter from Mindsensor to NXT Library
