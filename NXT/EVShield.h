@@ -62,6 +62,8 @@
 #define EVShield_H
 
 #include "SHDefines.h"
+#include "BaseI2CDevice.h"
+#include "SoftI2cMaster.h"
 
 // Motor control related constants.
 #define CONTROL_SPEED      0x01
@@ -157,8 +159,8 @@ typedef enum {
  * \enum Direction Motor direction related constants.
  */
 typedef enum {
-  Direction_Reverse = 0x00,   /*!< Run motor in reverse direction */
-  Direction_Forward = 0x01   /*!< Run motor in forward direction */
+  Reverse = 0x00,   /*!< Run motor in reverse direction */
+  Forward = 0x01   /*!< Run motor in forward direction */
 } Direction;
 
 /*
@@ -294,11 +296,120 @@ typedef enum {
 */
 #define S2   2
 
-#include "EVShieldI2C.h"
 #if defined(__AVR__)
   #include <avr/io.h>
   #include <avr/interrupt.h>
 #endif
+
+
+/**
+  This class implements I2C interfaces used by EVShield.
+	*/
+class EVShieldI2C : public BaseI2CDevice, public SoftI2cMaster
+{
+public:
+	/** Pointer to the EVShield
+	*/
+  void * mp_shield;
+	/** Pointer to internal i2c buffer
+	*/
+	uint8_t *_i2c_buffer;
+
+public:
+	/** Class constructor for the EVShieldI2C; derived from both BaseI2CDevice and SoftI2cMaster; i2c address must be passed as a parameter */
+  EVShieldI2C(uint8_t i2c_address);
+  
+	/** global variable of the i2c protocol used */
+	uint8_t m_protocol;
+
+	/** initialized this i2c address with a pointer to the EVShield and the bankport it is connected to */
+	void init(void * shield, BankPort bp);
+  
+	/** Read a byte from specified location
+	 @param location address to read at
+	 @return  a byte value read from the location
+	*/
+  uint8_t  readByte  (uint8_t location);
+  
+	/** Read an integer from specified location. Integer comprises of 2 bytes.
+	 @param location address to read at
+	 @return  an integer value read from the location
+	*/
+	uint16_t readInteger  (uint8_t location);
+	
+	/** Read a long from specified location. Long comprises of 4 bytes.
+	 @param location address to read at
+	 @return  a long value read from the location
+	*/
+    uint32_t readLong  (uint8_t location);
+	
+	/** read the specified number of bytes from the buffer starting from the specified start register 
+	 @param start_register location to start reading from
+	 @param bytes Number of bytes to read
+	 @param buf buffer to read the data into
+	 @return the character array that was read.
+	*/
+	uint8_t*  readRegisters  (uint8_t  start_register, uint8_t  bytes, uint8_t* buf);
+
+	/** Read a string from specified location
+	 @param location address to read at
+	 @param bytes_to_read  number of bytes to read
+	 @param buffer optional, a buffer to read the data into.
+	 @param buffer_length optional, length of the buffer supplied.
+	 @return  a char array read from the location
+	*/
+  char*    readString  (uint8_t  location, uint8_t  bytes_to_read,
+               uint8_t* buffer = 0, uint8_t  buffer_length = 0);
+
+	/** write data bytes to the i2c device starting from the start register
+	@param start_register location to write at.
+	@param bytes_to_write Number of bytes to write
+	@param buffer (optional) data buffer, if not supplied, data from internal buffer is used.
+	*/
+  bool     writeRegisters  (uint8_t start_register, uint8_t bytes_to_write,
+                uint8_t* buffer = 0);
+
+	/** write one byte to the specified register location
+	@param location location to write to.
+	@param data the data to write.
+	*/
+  bool     writeByte  (uint8_t location, uint8_t data);
+  
+	/** write two bytes (int) to the specified register location
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool     writeInteger(uint8_t location, uint16_t data);
+  
+	/** write four bytes (long) to the specified register location 
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool     writeLong  (uint8_t location, uint32_t data);
+
+	/** get the firmware version of the device */
+	char*		getFirmwareVersion();
+	
+	/** get the name of the vendor of the device */
+	char*		getVendorID();
+	
+	/** get the name of the device */
+	char*		getDeviceID();
+	
+	/** get the features the device is capable of; only supported by some devices */
+	char*		getFeatureSet();
+
+	/** get the error code of last i2c operation */
+	uint8_t getErrorCode();
+
+	bool checkAddress();
+
+	/** set the i2c address for this device 
+	@param address new device address.
+	*/
+    bool setAddress(uint8_t address);
+
+};
 
 /**
   @brief This class defines methods for the EVShield Bank(s).
@@ -837,5 +948,88 @@ private:
   @param s returned string of the binary representation
   */
 extern bool format_bin(uint8_t i, char *s);
+
+/**
+	EVShield Analog Sensor class.
+  */
+class EVShieldAGS
+{
+public:
+	/** pointer to the EVShield class instantiation used */
+	EVShield * mp_shield;
+	
+	/** bank port the analog device is connected to */
+	BankPort m_bp;
+	
+	/** null constructor for the EVShieldAGS class; need to init later */
+  EVShieldAGS();
+	
+	/** class constructor with pointed to EVShield and the bankport as a parameter; init is not needed */
+  EVShieldAGS(EVShield * shield, BankPort bp);
+	
+	/** set the type of the device on this port of the EVShield */
+  bool  setType(uint8_t type);
+	
+	/** read the raw analog value from the device and return as an integer */
+  int   readRaw();
+	
+	/** initialize the analog device with a pointed to the EVShield and the bank port it is connected to */
+	bool init(EVShield * shield, BankPort bp);
+
+};
+
+/**
+  @brief EVShield UART Sensor class.
+  also provides support for the EV3 Touch Sensor
+ */
+class EVShieldUART
+{
+    public:
+        /** pointer to the EVShield class instantiation used */
+        EVShield * mp_shield;
+
+        /** bank port the analog device is connected to */
+        BankPort m_bp;
+
+        /** the data for uart sensors is stored in the bank, and 
+          there is a offset based on port */
+        int m_offset;
+
+        /** null constructor for the EVShieldUART class; need to init later */
+        EVShieldUART();
+
+        /** class constructor with pointer to EVShield and the bankport as a parameter; init is not needed */
+        EVShieldUART(EVShield * shield, BankPort bp);
+
+        /** get the mode of the sensor */
+        uint8_t	getMode( );
+
+        /** When the device is initially connected (or type is changed) it takes a while for the sensor to negotiate UART communication with host and be ready to provide readings. This funciton will return True if the sensor is ready, False if it is not ready*/
+        bool isDeviceReady();
+
+        /** set the type of the device on this port of the EVShield */
+        bool  setType(uint8_t type);
+
+        /**  write a byte at the given location (selects appropriate bank) */
+        bool writeLocation(uint8_t loc, uint8_t data);
+
+        /** read integer value from specificed location */
+        int16_t readLocationInt(uint8_t loc);
+
+        /** read the value from the device at given location and return as an integer */
+        uint8_t readLocationByte(uint8_t loc);
+
+        /** initialize the analog device with a pointed to the EVShield and the bank port it is connected to */
+        bool init(EVShield * shield, BankPort bp);
+
+        /** set mode of the sensor */
+        uint8_t  setMode(char newMode);
+
+        /** read sensor reading */
+        uint16_t	readValue();
+
+        /**  internal function to examine the buffer */
+        bool	readAndPrint(uint8_t loc, uint8_t len);
+};
 
 #endif
