@@ -52,6 +52,214 @@ uint8_t blueLED, blueLED_cp;
 
 bool toggle2 = 0;
 
+//EVShieldAGS Library
+EVShieldAGS::EVShieldAGS()
+{
+  mp_shield = NULL;
+}
+
+EVShieldAGS::EVShieldAGS(EVShield * shield, BankPort bp)
+{
+  mp_shield = shield;
+  m_bp = bp;
+}
+
+bool EVShieldAGS::setType(uint8_t type)
+{
+  if ( mp_shield == NULL) return false;
+  switch (m_bp) {
+    case BAS1:
+      return mp_shield->bank_a.sensorSetType(S1, type);
+      break;
+    case BAS2:
+      return mp_shield->bank_a.sensorSetType(S2, type);
+      break;
+    case BBS1:
+      return mp_shield->bank_b.sensorSetType(S1, type);
+      break;
+    case BBS2:
+      return mp_shield->bank_b.sensorSetType(S2, type);
+      break;
+  }
+}
+
+int EVShieldAGS::readRaw()
+{
+  if ( mp_shield == NULL) return -1;
+
+  switch (m_bp) {
+    case BAS1:
+      return mp_shield->bank_a.sensorReadRaw(S1);
+      break;
+    case BAS2:
+      return mp_shield->bank_a.sensorReadRaw(S2);
+      break;
+    case BBS1:
+      return mp_shield->bank_b.sensorReadRaw(S1);
+      break;
+    case BBS2:
+      return mp_shield->bank_b.sensorReadRaw(S2);
+      break;
+  }
+}
+
+bool EVShieldAGS::init(EVShield * shield, BankPort bp)
+{
+  mp_shield = shield;
+  m_bp = bp;
+  return true;
+}
+
+//EVShieldI2C Library
+EVShieldI2C::EVShieldI2C(uint8_t i2c_address)
+  : BaseI2CDevice(i2c_address), SoftI2cMaster(i2c_address)
+{
+}
+
+uint8_t  EVShieldI2C::readByte  (uint8_t location)
+{
+  if (!m_protocol) return BaseI2CDevice::readByte( location );
+  else             return SoftI2cMaster::readByte( location );
+}
+
+
+uint16_t EVShieldI2C::readInteger  (uint8_t location)
+{
+  if (!m_protocol) return BaseI2CDevice::readInteger( location );
+  else             return SoftI2cMaster::readInteger( location );
+}
+
+
+uint32_t EVShieldI2C::readLong  (uint8_t location)
+{
+  if (!m_protocol) return BaseI2CDevice::readLong( location );
+  else             return SoftI2cMaster::readLong( location );
+}
+
+
+uint8_t*  EVShieldI2C::readRegisters  (uint8_t  startRegister, uint8_t  bytes, uint8_t* buf)
+{
+  if (!m_protocol) return BaseI2CDevice::readRegisters(startRegister, bytes, buf);
+	else             return SoftI2cMaster::readRegisters(startRegister, bytes, buf);
+}
+
+
+char*    EVShieldI2C::readString  (uint8_t  location, uint8_t  bytes_to_read,
+            uint8_t* buffer, uint8_t  buffer_length)
+{
+  if (!m_protocol) return BaseI2CDevice::readString(location, bytes_to_read, buffer, buffer_length);
+  else             return SoftI2cMaster::readString(location, bytes_to_read, buffer, buffer_length);
+}
+
+
+bool EVShieldI2C::writeRegisters  (uint8_t start_register, uint8_t bytes_to_write, uint8_t* buffer)
+{
+  if (!m_protocol) return BaseI2CDevice::writeRegisters(start_register, bytes_to_write, buffer);
+  else             return SoftI2cMaster::writeRegisters(start_register, bytes_to_write, buffer);
+}
+
+bool EVShieldI2C::writeByte  (uint8_t location, uint8_t data)
+{
+    uint8_t dd[3];
+    if (!m_protocol) {
+        BaseI2CDevice::writeByte(location, data);
+    } else {
+        SoftI2cMaster::writeByte(location, data);
+    }
+    return true;
+}
+
+bool EVShieldI2C::writeInteger(uint8_t location, uint16_t data)
+{
+  if (!m_protocol) return BaseI2CDevice::writeInteger(location, data);
+  else             return SoftI2cMaster::writeInteger(location, data);
+}
+
+bool EVShieldI2C::writeLong  (uint8_t location, uint32_t data)
+{
+  if (!m_protocol) return BaseI2CDevice::writeLong(location, data);
+  else             return SoftI2cMaster::writeLong(location, data);
+}
+
+uint8_t EVShieldI2C::getErrorCode  ( )
+{
+  if (!m_protocol) return BaseI2CDevice::getWriteErrorCode();
+  else             return SoftI2cMaster::getWriteErrorCode();
+}
+
+bool EVShieldI2C::checkAddress  ( )
+{
+  if (!m_protocol) return BaseI2CDevice::checkAddress();
+  else             return SoftI2cMaster::checkAddress();
+}
+
+bool EVShieldI2C::setAddress  (uint8_t address)
+{
+    // regardless of protocol, set the address
+  BaseI2CDevice::setAddress(address);
+  SoftI2cMaster::setAddress(address);
+	return true;
+}
+
+
+// READ INFORMATION OFF OF THE DEVICE
+// returns a string with the current firmware version of the device
+char* EVShieldI2C::getFirmwareVersion()
+{
+  return readString(0, 8);
+}
+
+// returns a string indicating the vendor of the device
+char* EVShieldI2C::getVendorID()
+{
+  return readString(0x08, 8);
+}
+
+// returns a string indicating the device's ID
+char* EVShieldI2C::getDeviceID()
+{
+  return readString(0x10, 8);
+}
+// returns a string indicating the features on this device
+// some devices may return null.
+char* EVShieldI2C::getFeatureSet()
+{
+  return readString(0x18, 8);
+}
+
+void EVShieldI2C::init(void * shield, BankPort bp)
+{
+    mp_shield = shield;
+    // on all banks hardware as well as software protocols are possible.
+    // so store the main shield's protocol value with us.
+    // and initialize with appropriate function
+    //
+    // For BAS2, BBS1, BBS2 only software i2c is possible.
+    m_protocol = ((EVShield *)shield)->m_protocol;
+    switch (m_protocol) {
+        case HardwareI2C:
+            BaseI2CDevice::initProtocol ( );
+            break;
+        case SoftwareI2C:
+            SoftI2cMaster::initProtocol ( ); // no arguments, ie use default h/w i2c pins: (A5,A4)
+            break;
+    }
+    switch (bp) {
+        case BAS1:
+            ((EVShield *)shield)->bank_a.writeByte(S1_MODE,Type_I2C);
+            break;
+        case BAS2:
+            ((EVShield *)shield)->bank_a.writeByte(S2_MODE,Type_I2C);
+            break;
+        case BBS1:
+            ((EVShield *)shield)->bank_b.writeByte(S1_MODE,Type_I2C);
+            break;
+        case BBS2:
+            ((EVShield *)shield)->bank_b.writeByte(S2_MODE,Type_I2C);
+            break;
+    }
+}
+
 bool format_bin(uint8_t i, char *s)
 {
   int j;
@@ -585,7 +793,7 @@ uint8_t EVShieldBank::motorWaitUntilTachoDone(Motor which_motors)
 // Take a speed and direction and give just a speed
 inline int calcFinalSpeed(int initialSpeed, Direction direction)
 {
-  if (direction == Direction_Forward)
+  if (direction == Forward)
     return initialSpeed;
   return -initialSpeed;
 }
@@ -1212,4 +1420,171 @@ uint8_t EVShield::getFunctionButton()
   #else
   return 0;
   #endif
+}
+
+//EVShieldUART
+EVShieldUART::EVShieldUART()
+{
+    mp_shield = NULL;
+}
+
+EVShieldUART::EVShieldUART(EVShield * shield, BankPort bp)
+{
+    mp_shield = shield;
+    m_bp = bp;
+
+    switch(m_bp) {
+        case BAS1:
+        case BBS1:
+            m_offset = 0;
+            break;
+        case BAS2:
+        case BBS2:
+            m_offset = 52;
+            break;
+    }
+}
+
+bool EVShieldUART::setType(uint8_t type)
+{
+    if ( mp_shield == NULL) return false;
+    switch (m_bp) {
+        case BAS1:
+            return mp_shield->bank_a.sensorSetType(S1, type);
+
+        case BAS2:
+            return mp_shield->bank_a.sensorSetType(S2, type);
+
+        case BBS1:
+            return mp_shield->bank_b.sensorSetType(S1, type);
+
+        case BBS2:
+            return mp_shield->bank_b.sensorSetType(S2, type);
+
+    }
+}
+
+bool EVShieldUART::writeLocation(uint8_t loc, uint8_t data)
+{
+    if ( mp_shield == NULL) return false;
+
+    switch (m_bp) {
+        case BAS1:
+        case BAS2:
+            return mp_shield->bank_a.writeByte(loc, data);
+
+        case BBS1:
+        case BBS2:
+            return mp_shield->bank_b.writeByte(loc, data);
+
+    }
+}
+
+int16_t EVShieldUART::readLocationInt(uint8_t loc)
+{
+    if ( mp_shield == NULL) return -1;
+
+    switch (m_bp) {
+        case BAS1:
+        case BAS2:
+            return mp_shield->bank_a.readInteger(loc);
+
+        case BBS1:
+        case BBS2:
+            return mp_shield->bank_b.readInteger(loc);
+
+    }
+}
+
+uint8_t EVShieldUART::readLocationByte(uint8_t loc)
+{
+    if ( mp_shield == NULL) return -1;
+
+    switch (m_bp) {
+        case BAS1:
+        case BAS2:
+            return mp_shield->bank_a.readByte(loc);
+
+        case BBS1:
+        case BBS2:
+            return mp_shield->bank_b.readByte(loc);
+
+    }
+}
+
+bool EVShieldUART::init(EVShield * shield, BankPort bp)
+{
+    mp_shield = shield;
+    m_bp = bp;
+    switch(m_bp) {
+        case BAS1:
+        case BBS1:
+            m_offset = 0;
+            break;
+        case BAS2:
+        case BBS2:
+            m_offset = 52;
+            break;
+    }
+    return true;
+}
+
+uint8_t	EVShieldUART::getMode( )
+{
+    if ( mp_shield == NULL) return -1;
+    switch (m_bp) {
+        case BAS1:
+        case BAS2:
+            return mp_shield->bank_a.readByte(0x81+m_offset);
+        case BBS1:
+        case BBS2:
+            return mp_shield->bank_b.readByte(0x81+m_offset);
+    }
+}
+
+
+uint8_t	EVShieldUART::setMode(char newMode)
+{
+    if ( mp_shield == NULL) return -1;
+    switch (m_bp) {
+        case BAS1:
+        case BAS2:
+            return mp_shield->bank_a.writeByte(0x81+m_offset, (uint8_t) newMode);
+        case BBS1:
+        case BBS2:
+            return mp_shield->bank_b.writeByte(0x81+m_offset, (uint8_t) newMode);
+    }
+}
+
+bool	EVShieldUART::isDeviceReady()
+{
+    if ( mp_shield == NULL) return false;
+    switch (m_bp) {
+        case BAS1:
+        case BAS2:
+            return (mp_shield->bank_a.readByte(0x70+m_offset) == 1);
+        case BBS1:
+        case BBS2:
+            return (mp_shield->bank_b.readByte(0x70+m_offset) == 1);
+    }
+
+}
+
+
+bool	EVShieldUART::readAndPrint(uint8_t loc, uint8_t len)
+{
+    uint8_t result;
+    Serial.print(" ");
+    for (int i=loc; i<loc+len; i++) {
+        Serial.print (readLocationByte(i), DEC); Serial.print(" ");
+    }
+    //Serial.println("");
+}
+
+
+uint16_t	EVShieldUART::readValue()
+{
+    uint16_t result;
+    result = readLocationInt(0x83+m_offset);
+    return (result);
 }
