@@ -1,6 +1,11 @@
 # EvShield
 Library for NXT/EV3 Shield for Arduino
 
+# V1.3
+- BaseI2CDevice.h, SHDefines.h and SoftI2CMaster with the already combined EVShield.h
+- Still working on EV3 Sensors
+- Making examples for NXT Library
+
 # V1.2
 - Combined EvShieldAGS.h, EVSHieldI2C.h and EVShieldUART.h with EVShield.h
 - Started with EV3 Sensors
