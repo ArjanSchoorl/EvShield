@@ -61,9 +61,102 @@
 #ifndef EVShield_H
 #define EVShield_H
 
-#include "SHDefines.h"
-#include "BaseI2CDevice.h"
-#include "SoftI2cMaster.h"
+#include <inttypes.h>
+
+#if defined(ARDUINO) && ARDUINO >= 100
+#include "Arduino.h"
+#else
+#include "WProgram.h"
+#endif
+
+// SHDefines Library
+#if defined(__AVR__)
+  #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega8__) || defined(__AVR_ATmega328P__) 
+      #define MODEL_EVSHIELD_D
+  #else
+      #define MODEL_EVSHIELD_M
+  #endif
+
+#elif defined(__PIC32MX__)
+
+  #if defined(_BOARD_UNO_) 
+      #define MODEL_EVSHIELD_D
+  #elif defined(_BOARD_MEGA_)
+      #define MODEL_EVSHIELD_M
+  #endif
+
+#endif
+#if defined(ARDUINO_ARC32_TOOLS)
+  #define MODEL_EVSHIELD_D
+#endif
+
+
+/**
+  \enum BankPort for the sensor bank ports
+*/
+typedef enum {
+  BAS1 = 0x01,  /*!<  Bank A Sensor Port 1 */
+  BAS2 = 0x02,  /*!<  Bank A Sensor Port 2 */
+  BBS1 = 0x03,  /*!<  Bank B Sensor Port 1 */
+  BBS2 = 0x04   /*!<  Bank B Sensor Port 2 */
+} BankPort;
+
+//! Protocols supported by EVShield.
+/**
+  \enum Protocols Protocol enums - to initialize your EVShield with appropriate protocol.
+*/
+typedef enum {
+  HardwareI2C  = 0,  /*!< It's best to use hardware i2c as it is faster, (but it does not work with Ultrasonic Sensor). */
+  SoftwareI2C,  /*!< Software I2C is slower, and designed to work with Ultrasonic sensor.  */
+} Protocols;
+
+#if defined(MODEL_EVSHIELD_D)
+  // Arduino Duemilanove, Uno
+  #define SCL_BAS1  A5
+  #define SDA_BAS1  A4
+  #define SCL_BAS2  2
+  #define SDA_BAS2  A0
+  #define SCL_BBS1  4
+  #define SDA_BBS1  A1
+  #define SCL_BBS2  7
+  #define SDA_BBS2  A2
+
+  // deepak
+  #define BTN_RIGHT  4
+  #define BTN_LEFT  1
+  // deepak end
+
+  #define BTN_GO  2
+  #define LED_RED  8
+  #define LED_GREEN  A3
+  #define LED_BLUE  12
+
+#else
+  // Arduino mega, 2560
+  #define SCL_BAS1  21
+  #define SDA_BAS1  20
+  #define SCL_BAS2  19
+  #define SDA_BAS2  A13
+  #define SCL_BBS1  17
+  #define SDA_BBS1  A14
+  #define SCL_BBS2  18
+  #define SDA_BBS2  A15
+
+  #define BTN_LEFT  16
+  #define BTN_GO  15
+  #define BTN_RIGHT 14
+  #define LED_RED  16
+  #define LED_GREEN  15
+  #define LED_BLUE  14
+  
+#endif
+
+// delay used to tweek signals
+#define I2C_DELAY_USEC 30
+
+// R/W direction bit to OR with address for start or restart
+#define I2C_READ 1
+#define I2C_WRITE 0
 
 // Motor control related constants.
 #define CONTROL_SPEED      0x01
@@ -203,7 +296,6 @@ typedef enum {
 */
 #define Bank_B 0x36
 
-
 /*
  *  Sensor type primitives
  *
@@ -222,7 +314,6 @@ typedef enum {
 	In this type the sensor port is not powered (for sensors like touch sensor).
 */
 #define Type_ANALOG   0x02
-
 
 /*!
   \def Type_LIGHT_REFLECTED
@@ -276,8 +367,6 @@ typedef enum {
 */
 #define Type_EV3                  19
 
-
-
 /*
  * Sensor defines.
  */
@@ -301,6 +390,269 @@ typedef enum {
   #include <avr/interrupt.h>
 #endif
 
+/** parse the two bytes in the buffer into an integer */
+inline uint16_t readIntFromBuffer(uint8_t* buf)
+{
+	return buf[0] | (buf[1] << 8);
+}
+
+/** parse the four bytes in the buffer into an integer of type long */
+inline uint32_t readLongFromBuffer(uint8_t* buf)
+{
+    /* typecasts added to make it compatible with 1.6.8 */
+	return (uint32_t)buf[0] |
+           (((uint32_t)buf[1]) << 8) |
+           (((uint32_t)buf[2]) << 16) |
+           (((uint32_t)buf[3]) << 24);
+}
+
+/** write the data as a byte to the supplied buffer */
+inline void writeByteToBuffer(uint8_t* buf, uint8_t data)
+{
+	buf[0] = data;
+}
+
+inline void writeByteToBuffer(uint8_t* buf, int8_t data)
+{
+	writeByteToBuffer(buf, (uint8_t)data);
+}
+
+/** write the two byte integer to the supplied buffer */
+inline void writeIntToBuffer(uint8_t* buf, uint16_t data)
+{
+	buf[0] = data & 0xFF;
+	buf[1] = (data >> 8) & 0xFF;
+}
+
+inline void writeIntToBuffer(uint8_t* buf, int16_t data)
+{
+	writeIntToBuffer(buf, (uint16_t)data);
+}
+
+/** write the four byte integer of type long to the supplied buffer */
+inline void writeLongToBuffer(uint8_t* buf, uint32_t data)
+{
+	buf[0] = data & 0xFF;
+	buf[1] = (data >>  8) & 0xFF;
+	buf[2] = (data >> 16) & 0xFF;
+	buf[3] = (data >> 24) & 0xFF;
+}
+
+inline void writeLongToBuffer(uint8_t* buf, int32_t data)
+{
+	writeLongToBuffer(buf, (uint32_t)data);
+}
+
+/**
+  @brief This class implements hardware I2C protocol used by EVShield/NXShield on an Arduino
+	*/
+class BaseI2CDevice
+{
+	// Note that this class is a base class, but not an abstract base class
+	// Feel free to instantiate BaseI2CDevice.
+	
+public:
+	/** constructor for the BaseI2C Device class; requires the i2c address of the device */
+	BaseI2CDevice(uint8_t i2c_address);
+
+	/** initialize hardware i2c using the Wire.h library */
+	void initProtocol();
+	
+	/** read specified number of bytes from the start register.
+	 @param start_register location to start reading from
+	 @param bytes_to_read Number of bytes to read (max 16 for LEGO compatible devices)
+	 @param buffer (optional) buffer to read the data into
+	 @param buffer_length (optional) length of the buffer if it was provided
+	 @param clear_buffer (optional) to clear the buffer or not before using.
+	 @return pointer to data buffer that was read. If buffer was not provided, this is internal pointer.
+	*/
+	uint8_t* 	readRegisters	(uint8_t start_register, uint8_t bytes_to_read,
+								uint8_t* buffer = 0, uint8_t buffer_length = 0, bool clear_buffer = false);
+
+	/** Read a byte from specified location
+	 @param location address to read at
+	 @return  a byte value read from the location
+	*/
+	uint8_t  	readByte	(uint8_t location);
+
+	/** Read an integer from specified location. Integer comprises of 2 bytes.
+	 @param location address to read at
+	 @return  an integer value read from the location
+	*/
+	int16_t  	readInteger	(uint8_t location);
+
+	/** Read a long from specified location. Long comprises of 4 bytes.
+	 @param location address to read at
+	 @return  a long value read from the location
+	*/
+	uint32_t  	readLong	(uint8_t location);
+
+	/** Read a string from specified location
+	 @param location address to read at
+	 @param bytes_to_read  number of bytes to read
+	 @param buffer optional, a buffer to read the data into.
+	 @param buffer_length optional, length of the buffer supplied.
+	 @return  a char array read from the location
+	*/
+	char* 		readString	(uint8_t  location, uint8_t  bytes_to_read,
+							 uint8_t* buffer = 0, uint8_t  buffer_length = 0);
+
+
+	/** write data bytes to the i2c device starting from the start register
+	@param start_register location to write at.
+	@param bytes_to_write Number of bytes to write
+	@param buffer (optional) data buffer, if not supplied, data from internal buffer is used.
+	*/
+	bool 		writeRegisters	(uint8_t start_register, uint8_t bytes_to_write,
+								uint8_t* buffer = 0);
+
+	/** write one byte to the specified register location
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool 		writeByte	(uint8_t location, uint8_t data);
+	
+	/** write two bytes (int) to the specified register location
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool 		writeInteger(uint8_t location, uint16_t data);
+	
+	/** write four bytes (long) to the specified register location 
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool 		writeLong	(uint8_t location, uint32_t data);
+
+	/** validate if a device is attached to the i2c bus with the specified i2c address */
+	bool checkAddress();
+	
+	/** set the i2c address for this device 
+	@param i2c_address new device address.
+	*/
+	bool setAddress(uint8_t i2c_address);
+	
+	/** returns the current address for this instance of BaseI2CDevice */
+	uint8_t getAddress();
+
+	/** returns the error code for an error with the Wire.h library on the i2c bus */
+	uint8_t		getWriteErrorCode();
+
+	/** return the firware version id of the device */
+	char*		getFirmwareVersion();
+	
+	/** return the name of the vendor for the device */
+	char*		getVendorID();
+	
+	/** get the name of the device */
+	char*		getDeviceID();
+	
+	/** returns the features on the device, not supported by all devices */
+	char*		getFeatureSet();
+
+	/** Buffer used for data that is returned from I2C commands
+	*/
+	static uint8_t* _buffer;
+
+	static bool b_initialized;
+
+protected:
+	/** write the internal error code
+	*/
+	void		setWriteErrorCode(uint8_t code);
+
+private:
+	uint8_t _device_address;	// I2C address of the I2C device
+	uint8_t _write_error_code;	// Error code from last write
+};
+
+/**
+  @brief This class implements software i2c interface used by EVShield/NXShield on Arduino
+	*/
+class SoftI2cMaster {
+
+	bool initialized;
+private:
+	uint8_t sclPin_;
+	uint8_t sdaPin_;
+	uint8_t deviceAddr;
+	uint8_t _error_code;	// Error code 
+
+public:
+	/** internal buffer */
+	uint8_t* _so_buffer;
+	
+	/** issue a start condition for i2c address with read/write bit */
+	uint8_t start(uint8_t addressRW);
+
+	/** issue a stop condition */
+	void stop(void);
+	
+	/** issue stop condition, pull down scl, and start again */
+	uint8_t restart(uint8_t addressRW);
+	
+	/** write byte and return true for Ack or false for Nak */
+	uint8_t write(uint8_t b);
+
+	/** read a byte and send Ack if last is false else Nak to terminate read */
+	uint8_t read(uint8_t last);
+
+	/** class constructor supplies the device address */
+	SoftI2cMaster(uint8_t devAddr);
+	
+	/** init bus custom scl and sda pins are optional */
+	void initProtocol(uint8_t sclPin = (uint8_t)NULL, uint8_t sdaPin = (uint8_t)NULL);
+	
+	/** read number of bytes from start register and return values; optional buffer */
+	uint8_t* readRegisters(uint8_t startRegister, uint8_t bytes, uint8_t* buf = NULL);
+	
+	/** write number of bytes from buffer */
+	bool writeRegistersWithLocation(int bytes, uint8_t* buf);
+	
+	/** write bytes starting at the specified register location */
+  bool     writeRegisters  (uint8_t location, uint8_t bytes_to_write,
+                uint8_t* buffer = 0);
+  
+	/** write one byte starting at the specified register location */
+	bool     writeByte  (uint8_t location, uint8_t data);
+	
+	/** write integer starting at the specified register location */
+  bool     writeInteger(uint8_t location, uint16_t data);
+	
+	/** write integer type long starting at the specified register location */
+  bool     writeLong  (uint8_t location, uint32_t data);
+
+	/** read specified number of bytes starting at the startRegister */
+	char* readString(uint8_t startRegister, uint8_t bytes, uint8_t* buf = NULL, uint8_t len=0);
+	
+	/** read one byte starting at the location */
+	uint8_t readByte	(uint8_t location);
+	
+	/** read two bytes and parse as an integer starting at the location */
+	int16_t readInteger	(uint8_t location);
+	
+	/** read and parse as integer type long at the location */
+	uint32_t readLong	(uint8_t location);
+
+	/** get the version of the firmware */
+	char*		getFirmwareVersion();
+	
+	/** get the name of the vendor */
+	char*		getVendorID();
+	
+	/** get the name of the device */
+	char*		getDeviceID();
+	
+	/** Get error of last i2c operation */
+	uint8_t getWriteErrorCode();
+
+	bool checkAddress();
+
+	/** set the i2c address for this device 
+	@param address new device address.
+	*/
+	bool setAddress(uint8_t address);
+};
 
 /**
   This class implements I2C interfaces used by EVShield.
