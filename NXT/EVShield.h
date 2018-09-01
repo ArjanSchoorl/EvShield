@@ -1,525 +1,1387 @@
-/*
- * EVShield interface library for NXT Sensors
+
+/** \file EVShield.h
+* EVShield.h defines main interfaces used in the EVShield library.
+ \mainpage  EVShield Library Reference
+ \section intro_sec Introduction
+ EVShield library provides interfaces to use EVShield by mindsensors.com on Arduino.
+ 
+ At the time of this writing, EVShield and this library can be used with the following boards:
+
+   <b>Arduino boards:</b>\n
+      Uno, Uno R3\n
+      Duemilanove\n
+      Arduino/Genuino 101\n
+ 
+ 
+ <a href="http://www.mindsensors.com/stem-with-robotics/13-pistorms-v2-base-kit-raspberry-pi-brain-for-lego-robot"><b>PiStorms</b></a> and this library can be used with the following board:
+
+   <b>Arduino board:</b>\n
+      Wi-Fi Arduino Interface for PiStorms (ESP8266)
+
+ \section getting_started  Getting Started
+ If you need help to begin with your first program, please download and review <b>EVShield-AVR-Library-Tutorial.pdf</b>
+ from following url: http://www.mindsensors.com/index.php?controller=attachment&id_attachment=136
+
+ \section more_info  More Information
+ More information about EVShield is available at: http://www.mindsensors.com/arduino/16-evshield-for-arduino-duemilanove-or-uno
+
+ Online documentation of this Library Reference is available at:
+ http://www.mindsensors.com/reference/EVShield/html/
+ (Note however, the online version may not match exactly with the library files you have installed on your computer).
+
+ \section install_sec Installation Instructions
+ To install this library in your Arduino IDE, download the latest zip file from following location:
+ https://github.com/mindsensors/EVShield
+
+ And follow the instructions at this url to install it on your computer.
 */
 
-#ifndef NXT_H
-#define NXT_H
+/*
+ * EVShield interface library
+ * Copyright (C) 2016 mindsensors.com
+ * 12/18/2014  Nitin Patil --  modified to work with EVshield 
+ * Feb 2017  Seth Tenembaum -- modified to work with PiStorms, added touchscreen defines and methods
+ *
+ * This file is part of EVShield interface library.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
 
-#include "EVShield.h"
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+#ifndef EVShield_H
+#define EVShield_H
+
+#include <inttypes.h>
+
+#if defined(ARDUINO) && ARDUINO >= 100
+#include "Arduino.h"
+#else
+#include "WProgram.h"
+#endif
+
+// SHDefines Library
+#if defined(__AVR__)
+  #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega8__) || defined(__AVR_ATmega328P__) 
+      #define MODEL_EVSHIELD_D
+  #else
+      #define MODEL_EVSHIELD_M
+  #endif
+
+#elif defined(__PIC32MX__)
+
+  #if defined(_BOARD_UNO_) 
+      #define MODEL_EVSHIELD_D
+  #elif defined(_BOARD_MEGA_)
+      #define MODEL_EVSHIELD_M
+  #endif
+
+#endif
+#if defined(ARDUINO_ARC32_TOOLS)
+  #define MODEL_EVSHIELD_D
+#endif
 
 
-//NXTCam
-#define Cam_Command           0x41
-#define Cam_Number_Objects    0x42
-#define Start_Reg             0x43
+/**
+  \enum BankPort for the sensor bank ports
+*/
+typedef enum {
+  BAS1 = 0x01,  /*!<  Bank A Sensor Port 1 */
+  BAS2 = 0x02,  /*!<  Bank A Sensor Port 2 */
+  BBS1 = 0x03,  /*!<  Bank B Sensor Port 1 */
+  BBS2 = 0x04   /*!<  Bank B Sensor Port 2 */
+} BankPort;
 
-//NXTCurrentMeter
-#define	IM_Command        	  0x41
-#define	ABSOLUTE_I	          0X43
-#define	RELATIVE_I	          0x45
-#define	REFERENCE_I	          0X47
+//! Protocols supported by EVShield.
+/**
+  \enum Protocols Protocol enums - to initialize your EVShield with appropriate protocol.
+*/
+typedef enum {
+  HardwareI2C  = 0,  /*!< It's best to use hardware i2c as it is faster, (but it does not work with Ultrasonic Sensor). */
+  SoftwareI2C,  /*!< Software I2C is slower, and designed to work with Ultrasonic sensor.  */
+} Protocols;
 
-//NXTMMX
-// THE FOLLOWING CONSTANTS ARE ALL FROM THE NXC SOURCE CODE
-#define MMX_CONTROL_SPEED      0x01
-#define MMX_CONTROL_RAMP       0x02
-#define MMX_CONTROL_RELATIVE   0x04
-#define MMX_CONTROL_TACHO      0x08
-#define MMX_CONTROL_BRK        0x10
-#define MMX_CONTROL_ON         0x20
-#define MMX_CONTROL_TIME       0x40
-#define MMX_CONTROL_GO         0x80
+#if defined(MODEL_EVSHIELD_D)
+  // Arduino Duemilanove, Uno
+  #define SCL_BAS1  A5
+  #define SDA_BAS1  A4
+  #define SCL_BAS2  2
+  #define SDA_BAS2  A0
+  #define SCL_BBS1  4
+  #define SDA_BBS1  A1
+  #define SCL_BBS2  7
+  #define SDA_BBS2  A2
 
-#define MMX_COMMAND     0x41
-#define MMX_VOLTAGE     0x41
+  // deepak
+  #define BTN_RIGHT  4
+  #define BTN_LEFT  1
+  // deepak end
 
-#define MMX_SETPT_M1     0x42
-#define MMX_SPEED_M1     0x46
-#define MMX_TIME_M1      0x47
-#define MMX_CMD_B_M1     0x48
-#define MMX_CMD_A_M1     0x49
+  #define BTN_GO  2
+  #define LED_RED  8
+  #define LED_GREEN  A3
+  #define LED_BLUE  12
 
-#define MMX_SETPT_M2     0x4A
-#define MMX_SPEED_M2     0x4E
-#define MMX_TIME_M2      0x4F
-#define MMX_CMD_B_M2     0x50
-#define MMX_CMD_A_M2     0x51
+#else
+  // Arduino mega, 2560
+  #define SCL_BAS1  21
+  #define SDA_BAS1  20
+  #define SCL_BAS2  19
+  #define SDA_BAS2  A13
+  #define SCL_BBS1  17
+  #define SDA_BBS1  A14
+  #define SCL_BBS2  18
+  #define SDA_BBS2  A15
+
+  #define BTN_LEFT  16
+  #define BTN_GO  15
+  #define BTN_RIGHT 14
+  #define LED_RED  16
+  #define LED_GREEN  15
+  #define LED_BLUE  14
+  
+#endif
+
+// delay used to tweek signals
+#define I2C_DELAY_USEC 30
+
+// R/W direction bit to OR with address for start or restart
+#define I2C_READ 1
+#define I2C_WRITE 0
+
+// Motor control related constants.
+#define CONTROL_SPEED      0x01
+#define CONTROL_RAMP       0x02
+#define CONTROL_RELATIVE   0x04
+#define CONTROL_TACHO      0x08
+#define CONTROL_BRK        0x10
+#define CONTROL_ON         0x20
+#define CONTROL_TIME       0x40
+#define CONTROL_GO         0x80
+
+#define STATUS_SPEED       0x01
+#define STATUS_RAMP        0x02
+#define STATUS_MOVING      0x04
+#define STATUS_TACHO       0x08
+#define STATUS_BREAK       0x10
+#define STATUS_OVERLOAD    0x20
+#define STATUS_TIME        0x40
+#define STATUS_STALL       0x80
+
+#define COMMAND     0x41
+#define VOLTAGE     0x6E
+
+#define SETPT_M1     0x42
+#define SPEED_M1     0x46
+#define TIME_M1      0x47
+#define CMD_B_M1     0x48
+#define CMD_A_M1     0x49
+
+#define SETPT_M2     0x4A
+#define SPEED_M2     0x4E
+#define TIME_M2      0x4F
+#define CMD_B_M2     0x50
+#define CMD_A_M2     0x51
 
 /*
  * Read registers.
  */
-#define MMX_POSITION_M1  0x62
-#define MMX_POSITION_M2  0x66
-#define MMX_STATUS_M1    0x72
-#define MMX_STATUS_M2    0x73
-#define MMX_TASKS_M1     0x76
-#define MMX_TASKS_M2     0x77
+#define POSITION_M1  0x52
+#define POSITION_M2  0x56
+#define STATUS_M1    0x5A
+#define STATUS_M2    0x5B
+#define TASKS_M1     0x5C
+#define TASKS_M2     0x5D
 
-#define MMX_ENCODER_PID  0x7A
-#define MMX_SPEED_PID  0x80
-#define MMX_PASS_COUNT  0x86
-#define MMX_TOLERANCE  0x87
+#define ENCODER_PID  0x5E
+#define SPEED_PID  0x64
+#define PASS_COUNT  0x6A
+#define TOLERANCE  0x6B
+
+#define S1_MODE  0x6F
+#define S1_EV3_MODE  0x6F
+#define S1_ANALOG   0x70
+
+#define S2_MODE  0xA3
+#define S2_EV3_MODE  0x6F
+#define S2_ANALOG   0xA4
+
+#define BTN_PRESS     0xDA
+#define RGB_LED     0xD7
+#define CENTER_RGB_LED     0xDE
+
+#define PS_TS_X  0xE3
+#define PS_TS_Y  0xE5
+#define PS_TS_RAWX  0xE7
+#define PS_TS_RAWY  0xE9
+#define PS_TS_CALIBRATION_DATA_READY 0x70
+#define PS_TS_CALIBRATION_DATA 0x71
+#define PS_TS_SAVE 0x77
+#define PS_TS_LOAD 0x6C
+#define PS_TS_UNLOCK 0x45
 
 /* constants to be used by user programs */
-/*
- * Motor selection related constants
+/**
+ * \enum Motor Motor selection related constants
  */
-#define MMX_Motor_1                0x01
-#define MMX_Motor_2                0x02
-#define MMX_Motor_Both             0x03
+typedef enum {
+  Motor_1     = 0x01,   /*!< Choose Motor 1 for selected operation */
+  Motor_2     = 0x02,   /*!< Choose Motor 2 for selected operation  */
+  Motor_Both  = 0x03    /*!< Choose Both Motors for selected operation */
+} Motor;
 
 /*
- * Next action related constants
+ * \enum Next_Action Next action related constants
  */
-// stop and let the motor coast.
-#define MMX_Next_Action_Float      0x00
-// apply brakes, and resist change to tachometer
-#define MMX_Next_Action_Brake      0x01
-// apply brakes, and restore externally forced change to tachometer
-#define MMX_Next_Action_BrakeHold  0x02
+typedef enum {
+  Next_Action_Float  = 0x00, /*!< stop and let the motor coast. */
+  Next_Action_Brake = 0x01, /*!< apply brakes, and resist change to tachometer, but if tach position is forcibly changed, do not restore position */
+  Next_Action_BrakeHold = 0x02 /*!< apply brakes, and restore externally forced change to tachometer */
+} Next_Action;
+
+/**
+ * \enum Direction Motor direction related constants.
+ */
+typedef enum {
+  Reverse = 0x00,   /*!< Run motor in reverse direction */
+  Forward = 0x01   /*!< Run motor in forward direction */
+} Direction;
 
 /*
- * Direction related constants
+ * \enum Move Tachometer movement related constants
  */
-#define MMX_Direction_Forward      0x01
-#define MMX_Direction_Reverse      0x00
+typedef enum {
+  Move_Absolute = 0x00,   /*!< Move the tach to absolute value provided */
+  Move_Relative = 0x01   /*!< Move the tach relative to previous position */
+} Move;
 
 /*
- * Tachometer related constants
+ * \enum Completion_Wait Whether to wait for motor to finish it's current task or not
  */
-#define MMX_Move_Relative 0x01
-#define MMX_Move_Absolute 0x00
-
-#define MMX_Completion_Wait_For    0x01
-#define MMX_Completion_Dont_Wait   0x00
+typedef enum {
+  Completion_Dont_Wait    = 0x00,  /*!< Don't wait for motor to finish, program will continue with next function */
+  Completion_Wait_For     = 0x01  /*!< Wait for motor to finish, program will wait until current function finishes it's operation */
+} Completion_Wait;
 
 /*
  * Speed constants, these are just convenience constants,
  * You can use any value between 0 and 100.
  */
-#define MMX_Speed_Full 90
-#define MMX_Speed_Medium 60
-#define MMX_Speed_Slow 25
+#define Speed_Full 90
+#define Speed_Medium 60
+#define Speed_Slow 25
 
+/*
+ * EVShield has two banks, and each of them has different I2C address.
+ * each bank has 2 motors and 2 sensors.
+ *
+ */
+/*!
+  \def Bank_A
+	I2C address of bank A
+*/
+#define Bank_A 0x34
+/*!
+  \def Bank_B
+	I2C address of bank B
+*/
+#define Bank_B 0x36
 
-// NXTServo
-#define Servo_Command        0x41
-#define Servo_Voltage        0x41
+/*
+ *  Sensor type primitives
+ *
+ */
 
-#define Servo_1            1
-#define Servo_2            2
-#define Servo_3            3
-#define Servo_4            4
-#define Servo_5            5  
-#define Servo_6            6  
-#define Servo_7            7
-#define Servo_8            8
+ /*!
+  \def Type_NONE
+	In this type the sensor port is not defined and used.
+*/
+#define Type_NONE   0x00
 
-#define Servo_Position_Default    1500
-#define Servo_Speed_Full      0
+#define Type_SWITCH    0x01
+ 
+/*!
+  \def Type_ANALOG
+	In this type the sensor port is not powered (for sensors like touch sensor).
+*/
+#define Type_ANALOG   0x02
 
-#define Servo_Position_1      0x5A      
-#define Servo_Position_2      0x5B  
-#define Servo_Position_3      0x5C  
-#define Servo_Position_4      0x5D  
-#define Servo_Position_5      0x5E  
-#define Servo_Position_6      0x5F  
-#define Servo_Position_7      0x60  
-#define Servo_Position_8      0x61
+/*!
+  \def Type_LIGHT_REFLECTED
+	Used for detection of Refelected Light from Light sensors, 
+*/
+#define Type_LIGHT_REFLECTED      0x03
+/*!
+  \def Type_LIGHT_AMBIENT
+	Used for detection of ambient Light using the light sensors, 
+*/
+#define Type_LIGHT_AMBIENT      0x04
+/*!
+  \def Type_I2C
+	In this type the sensor connected should be an i2c device.
+*/
+#define Type_I2C                 0x09
 
-#define Servo_Speed_1        0x52      
-#define Servo_Speed_2        0x53  
-#define Servo_Speed_3        0x54  
-#define Servo_Speed_4        0x55  
-#define Servo_Speed_5        0x56  
-#define Servo_Speed_6        0x57  
-#define Servo_Speed_7        0x58  
-#define Servo_Speed_8        0x59
+/*!
+  \def Type_COLORFULL 
+	In this type the sensor connected is NXT color sensor in color mode
+*/
+#define Type_COLORFULL            13
+/*!
+  \def Type_COLORRED   
+	In this type the sensor connected is NXT color sensor in RED color mode
+*/
+#define Type_COLORRED             14
+/*!
+  \def Type_COLORGREEN     
+	In this type the sensor connected is NXT color sensor in GREEN color mode
+*/
+#define Type_COLORGREEN           15
+/*!
+  \def Type_COLORBLUE 
+	In this type the sensor connected is NXT color sensor in BLUE color mode
+*/
+#define Type_COLORBLUE            16
+/*!
+  \def Type_COLORNONE
+	In this type the sensor connected is NXT color sensor in ambient light mode
+*/
+#define Type_COLORNONE            17
+/*!
+  \def Type_EV3_SWITCH 
+	In this type the sensor connected is EV3 touch sensor
+*/
+#define Type_EV3_SWITCH           18
+/*!
+  \def Type_EV3
+	In this type the sensor connected is EV3 UART sensor
+*/
+#define Type_EV3                  19
 
+/*
+ * Sensor defines.
+ */
+/*!
+  \def S1
+	This is used internally to address Sensor Port 1.
+	Do not use this in sketches.
+	Sketches should use BankPort enums.
+*/
+#define S1   1
+/*!
+  \def S2
+	This is used internally to address Sensor Port 2.
+	Do not use this in sketches.
+	Sketches should use BankPort enums.
+*/
+#define S2   2
 
-//NXTThermometer
-#define NXTThermometer_Command      0x41
-#define NXTThermometer_Ambient_Temperature_C    0x42
-#define NXTThermometer_Target_Temperature_C    0x44
-#define NXTThermometer_Ambient_Temperature_F    0x46
-#define NXTThermometer_Target_Temperature_F    0x48
+#if defined(__AVR__)
+  #include <avr/io.h>
+  #include <avr/interrupt.h>
+#endif
 
+/** parse the two bytes in the buffer into an integer */
+inline uint16_t readIntFromBuffer(uint8_t* buf)
+{
+	return buf[0] | (buf[1] << 8);
+}
 
-//NXTVoltMeter
-#define	VM_Command	0x41
+/** parse the four bytes in the buffer into an integer of type long */
+inline uint32_t readLongFromBuffer(uint8_t* buf)
+{
+    /* typecasts added to make it compatible with 1.6.8 */
+	return (uint32_t)buf[0] |
+           (((uint32_t)buf[1]) << 8) |
+           (((uint32_t)buf[2]) << 16) |
+           (((uint32_t)buf[3]) << 24);
+}
 
-#define	ABSOLUTE_V	0X43
-#define	RELATIVE_V	0x45
+/** write the data as a byte to the supplied buffer */
+inline void writeByteToBuffer(uint8_t* buf, uint8_t data)
+{
+	buf[0] = data;
+}
 
-#define	REFERENCE_V	0X47
+inline void writeByteToBuffer(uint8_t* buf, int8_t data)
+{
+	writeByteToBuffer(buf, (uint8_t)data);
+}
+
+/** write the two byte integer to the supplied buffer */
+inline void writeIntToBuffer(uint8_t* buf, uint16_t data)
+{
+	buf[0] = data & 0xFF;
+	buf[1] = (data >> 8) & 0xFF;
+}
+
+inline void writeIntToBuffer(uint8_t* buf, int16_t data)
+{
+	writeIntToBuffer(buf, (uint16_t)data);
+}
+
+/** write the four byte integer of type long to the supplied buffer */
+inline void writeLongToBuffer(uint8_t* buf, uint32_t data)
+{
+	buf[0] = data & 0xFF;
+	buf[1] = (data >>  8) & 0xFF;
+	buf[2] = (data >> 16) & 0xFF;
+	buf[3] = (data >> 24) & 0xFF;
+}
+
+inline void writeLongToBuffer(uint8_t* buf, int32_t data)
+{
+	writeLongToBuffer(buf, (uint32_t)data);
+}
 
 /**
-  This class interfaces with LEGO NXT Touch sensor attached to EVShield 
+  @brief This class implements hardware I2C protocol used by EVShield/NXShield on an Arduino
 	*/
-class NXTTouch : public EVShieldAGS {
+class BaseI2CDevice
+{
+	// Note that this class is a base class, but not an abstract base class
+	// Feel free to instantiate BaseI2CDevice.
+	
 public:
-	/** check if the touch sensor is pressed */
-    bool init(EVShield * shield, BankPort bp);
-    bool isPressed();
+	/** constructor for the BaseI2C Device class; requires the i2c address of the device */
+	BaseI2CDevice(uint8_t i2c_address);
+
+	/** initialize hardware i2c using the Wire.h library */
+	void initProtocol();
+	
+	/** read specified number of bytes from the start register.
+	 @param start_register location to start reading from
+	 @param bytes_to_read Number of bytes to read (max 16 for LEGO compatible devices)
+	 @param buffer (optional) buffer to read the data into
+	 @param buffer_length (optional) length of the buffer if it was provided
+	 @param clear_buffer (optional) to clear the buffer or not before using.
+	 @return pointer to data buffer that was read. If buffer was not provided, this is internal pointer.
+	*/
+	uint8_t* 	readRegisters	(uint8_t start_register, uint8_t bytes_to_read,
+								uint8_t* buffer = 0, uint8_t buffer_length = 0, bool clear_buffer = false);
+
+	/** Read a byte from specified location
+	 @param location address to read at
+	 @return  a byte value read from the location
+	*/
+	uint8_t  	readByte	(uint8_t location);
+
+	/** Read an integer from specified location. Integer comprises of 2 bytes.
+	 @param location address to read at
+	 @return  an integer value read from the location
+	*/
+	int16_t  	readInteger	(uint8_t location);
+
+	/** Read a long from specified location. Long comprises of 4 bytes.
+	 @param location address to read at
+	 @return  a long value read from the location
+	*/
+	uint32_t  	readLong	(uint8_t location);
+
+	/** Read a string from specified location
+	 @param location address to read at
+	 @param bytes_to_read  number of bytes to read
+	 @param buffer optional, a buffer to read the data into.
+	 @param buffer_length optional, length of the buffer supplied.
+	 @return  a char array read from the location
+	*/
+	char* 		readString	(uint8_t  location, uint8_t  bytes_to_read,
+							 uint8_t* buffer = 0, uint8_t  buffer_length = 0);
+
+
+	/** write data bytes to the i2c device starting from the start register
+	@param start_register location to write at.
+	@param bytes_to_write Number of bytes to write
+	@param buffer (optional) data buffer, if not supplied, data from internal buffer is used.
+	*/
+	bool 		writeRegisters	(uint8_t start_register, uint8_t bytes_to_write,
+								uint8_t* buffer = 0);
+
+	/** write one byte to the specified register location
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool 		writeByte	(uint8_t location, uint8_t data);
+	
+	/** write two bytes (int) to the specified register location
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool 		writeInteger(uint8_t location, uint16_t data);
+	
+	/** write four bytes (long) to the specified register location 
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool 		writeLong	(uint8_t location, uint32_t data);
+
+	/** validate if a device is attached to the i2c bus with the specified i2c address */
+	bool checkAddress();
+	
+	/** set the i2c address for this device 
+	@param i2c_address new device address.
+	*/
+	bool setAddress(uint8_t i2c_address);
+	
+	/** returns the current address for this instance of BaseI2CDevice */
+	uint8_t getAddress();
+
+	/** returns the error code for an error with the Wire.h library on the i2c bus */
+	uint8_t		getWriteErrorCode();
+
+	/** return the firware version id of the device */
+	char*		getFirmwareVersion();
+	
+	/** return the name of the vendor for the device */
+	char*		getVendorID();
+	
+	/** get the name of the device */
+	char*		getDeviceID();
+	
+	/** returns the features on the device, not supported by all devices */
+	char*		getFeatureSet();
+
+	/** Buffer used for data that is returned from I2C commands
+	*/
+	static uint8_t* _buffer;
+
+	static bool b_initialized;
+
+protected:
+	/** write the internal error code
+	*/
+	void		setWriteErrorCode(uint8_t code);
+
+private:
+	uint8_t _device_address;	// I2C address of the I2C device
+	uint8_t _write_error_code;	// Error code from last write
 };
 
-/** 
-  This class interfaces with LEGO Light sensor attached to EVShield.
+/**
+  @brief This class implements software i2c interface used by EVShield/NXShield on Arduino
 	*/
-class NXTLight : public EVShieldAGS {
+class SoftI2cMaster {
+
+	bool initialized;
+private:
+	uint8_t sclPin_;
+	uint8_t sdaPin_;
+	uint8_t deviceAddr;
+	uint8_t _error_code;	// Error code 
+
 public:
-	/** initialize the NXTLight sensor with a pointer to the EVShield and the bank port it is connected to */
+	/** internal buffer */
+	uint8_t* _so_buffer;
+	
+	/** issue a start condition for i2c address with read/write bit */
+	uint8_t start(uint8_t addressRW);
+
+	/** issue a stop condition */
+	void stop(void);
+	
+	/** issue stop condition, pull down scl, and start again */
+	uint8_t restart(uint8_t addressRW);
+	
+	/** write byte and return true for Ack or false for Nak */
+	uint8_t write(uint8_t b);
+
+	/** read a byte and send Ack if last is false else Nak to terminate read */
+	uint8_t read(uint8_t last);
+
+	/** class constructor supplies the device address */
+	SoftI2cMaster(uint8_t devAddr);
+	
+	/** init bus custom scl and sda pins are optional */
+	void initProtocol(uint8_t sclPin = (uint8_t)NULL, uint8_t sdaPin = (uint8_t)NULL);
+	
+	/** read number of bytes from start register and return values; optional buffer */
+	uint8_t* readRegisters(uint8_t startRegister, uint8_t bytes, uint8_t* buf = NULL);
+	
+	/** write number of bytes from buffer */
+	bool writeRegistersWithLocation(int bytes, uint8_t* buf);
+	
+	/** write bytes starting at the specified register location */
+  bool     writeRegisters  (uint8_t location, uint8_t bytes_to_write,
+                uint8_t* buffer = 0);
+  
+	/** write one byte starting at the specified register location */
+	bool     writeByte  (uint8_t location, uint8_t data);
+	
+	/** write integer starting at the specified register location */
+  bool     writeInteger(uint8_t location, uint16_t data);
+	
+	/** write integer type long starting at the specified register location */
+  bool     writeLong  (uint8_t location, uint32_t data);
+
+	/** read specified number of bytes starting at the startRegister */
+	char* readString(uint8_t startRegister, uint8_t bytes, uint8_t* buf = NULL, uint8_t len=0);
+	
+	/** read one byte starting at the location */
+	uint8_t readByte	(uint8_t location);
+	
+	/** read two bytes and parse as an integer starting at the location */
+	int16_t readInteger	(uint8_t location);
+	
+	/** read and parse as integer type long at the location */
+	uint32_t readLong	(uint8_t location);
+
+	/** get the version of the firmware */
+	char*		getFirmwareVersion();
+	
+	/** get the name of the vendor */
+	char*		getVendorID();
+	
+	/** get the name of the device */
+	char*		getDeviceID();
+	
+	/** Get error of last i2c operation */
+	uint8_t getWriteErrorCode();
+
+	bool checkAddress();
+
+	/** set the i2c address for this device 
+	@param address new device address.
+	*/
+	bool setAddress(uint8_t address);
+};
+
+/**
+  This class implements I2C interfaces used by EVShield.
+	*/
+class EVShieldI2C : public BaseI2CDevice, public SoftI2cMaster
+{
+public:
+	/** Pointer to the EVShield
+	*/
+  void * mp_shield;
+	/** Pointer to internal i2c buffer
+	*/
+	uint8_t *_i2c_buffer;
+
+public:
+	/** Class constructor for the EVShieldI2C; derived from both BaseI2CDevice and SoftI2cMaster; i2c address must be passed as a parameter */
+  EVShieldI2C(uint8_t i2c_address);
+  
+	/** global variable of the i2c protocol used */
+	uint8_t m_protocol;
+
+	/** initialized this i2c address with a pointer to the EVShield and the bankport it is connected to */
+	void init(void * shield, BankPort bp);
+  
+	/** Read a byte from specified location
+	 @param location address to read at
+	 @return  a byte value read from the location
+	*/
+  uint8_t  readByte  (uint8_t location);
+  
+	/** Read an integer from specified location. Integer comprises of 2 bytes.
+	 @param location address to read at
+	 @return  an integer value read from the location
+	*/
+	uint16_t readInteger  (uint8_t location);
+	
+	/** Read a long from specified location. Long comprises of 4 bytes.
+	 @param location address to read at
+	 @return  a long value read from the location
+	*/
+    uint32_t readLong  (uint8_t location);
+	
+	/** read the specified number of bytes from the buffer starting from the specified start register 
+	 @param start_register location to start reading from
+	 @param bytes Number of bytes to read
+	 @param buf buffer to read the data into
+	 @return the character array that was read.
+	*/
+	uint8_t*  readRegisters  (uint8_t  start_register, uint8_t  bytes, uint8_t* buf);
+
+	/** Read a string from specified location
+	 @param location address to read at
+	 @param bytes_to_read  number of bytes to read
+	 @param buffer optional, a buffer to read the data into.
+	 @param buffer_length optional, length of the buffer supplied.
+	 @return  a char array read from the location
+	*/
+  char*    readString  (uint8_t  location, uint8_t  bytes_to_read,
+               uint8_t* buffer = 0, uint8_t  buffer_length = 0);
+
+	/** write data bytes to the i2c device starting from the start register
+	@param start_register location to write at.
+	@param bytes_to_write Number of bytes to write
+	@param buffer (optional) data buffer, if not supplied, data from internal buffer is used.
+	*/
+  bool     writeRegisters  (uint8_t start_register, uint8_t bytes_to_write,
+                uint8_t* buffer = 0);
+
+	/** write one byte to the specified register location
+	@param location location to write to.
+	@param data the data to write.
+	*/
+  bool     writeByte  (uint8_t location, uint8_t data);
+  
+	/** write two bytes (int) to the specified register location
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool     writeInteger(uint8_t location, uint16_t data);
+  
+	/** write four bytes (long) to the specified register location 
+	@param location location to write to.
+	@param data the data to write.
+	*/
+	bool     writeLong  (uint8_t location, uint32_t data);
+
+	/** get the firmware version of the device */
+	char*		getFirmwareVersion();
+	
+	/** get the name of the vendor of the device */
+	char*		getVendorID();
+	
+	/** get the name of the device */
+	char*		getDeviceID();
+	
+	/** get the features the device is capable of; only supported by some devices */
+	char*		getFeatureSet();
+
+	/** get the error code of last i2c operation */
+	uint8_t getErrorCode();
+
+	bool checkAddress();
+
+	/** set the i2c address for this device 
+	@param address new device address.
+	*/
+    bool setAddress(uint8_t address);
+
+};
+
+/**
+  @brief This class defines methods for the EVShield Bank(s).
+  */
+class EVShieldBank : public EVShieldI2C
+{
+public:
+  /** Constructor for bank a of the EVShield device */
+  EVShieldBank(uint8_t i2c_address = Bank_A);
+  
+  /** Get the battery voltage (milli-volts) for this bank of the EVShield
+    @return voltage value in milli-volts 
+    The voltage reported by this function is actual voltage at VIN pin on Arduino
+    This will be lower than your supply voltage due to drops at various points in the circuit.
+    The drop will be different based on where the power source is connected.
+    (i.e. source through EVShield Green connector Vs Arduino black adapater Vs Arduino USB.)
+    */
+  int  evshieldGetBatteryVoltage();
+
+  /** nxshieldGetBatteryVoltage() is provided for backword compatibility with nxshield programs.
+   */
+  int  nxshieldGetBatteryVoltage();
+
+  /** 
+  Issue a command to this bank of the EVShield
+  @param command Refer to user guide for list of commands.
+  */
+  uint8_t  EVShieldIssueCommand(char command);
+
+  //
+  //  Motor Operation APIs.
+  //
+  /** Set the target encoder position for the motor
+    @param which_motor    Provide which motor to operate on
+    @param target         Encode value to achieve
+  */
+  bool     motorSetEncoderTarget(Motor which_motor, long target);
+  
+  /** 
+  Get the target encoder position for the motor
+    @param which_motor    Provide which motor to operate on
+    @return long encoder value that the motor is trying to achieve.
+  */
+  long     motorGetEncoderTarget(Motor which_motor);
+  
+  /** 
+  Set the speed of the motor
+    @param which_motor    Provide which motor to operate on
+    @param speed          The speed value between 0 and 100
+  */
+  bool     motorSetSpeed(Motor which_motor, int speed);
+  
+  /** 
+  Get the speed of the motor
+    @param which_motor    Provide which motor to operate on
+    @return  the speed value set to the motor
+  */
+  int8_t   motorGetSpeed(Motor which_motor);
+  
+  /** 
+  Set the time in seconds for which the motor should run for
+    @param which_motor    Provide which motor to operate on
+    @param seconds          The time duration the motor should run
+  */
+  bool     motorSetTimeToRun(Motor which_motor, int seconds);
+  
+  /** 
+  Get the time in seconds that the motor is running for
+    @param which_motor    Provide which motor to operate on
+    @return  time the motor has been running since last start.
+  */
+  uint8_t  motorGetTimeToRun(Motor which_motor);
+  
+  /**
+    Set the Command Register B
+    There are two command registers, A and B.
+
+		For more information on what register does, please refer to 'Motor Command Register Explained' section of EVShield-Advanced-Development-Guide.pdf from following url:
+		http://www.openelectrons.com/index.php?module=documents&JAS_DocumentManager_op=viewDocument&JAS_Document_id=1
+
+    @param which_motor    Provide which motor to operate on
+    @param value       The command register value to set
+  */
+  bool     motorSetCommandRegB(Motor which_motor, uint8_t value);
+  /**
+    Get the command register B
+
+		For more information on what register does, please refer to 'Motor Command Register Explained' section of EVShield-Advanced-Development-Guide.pdf from following url:
+		http://www.openelectrons.com/index.php?module=documents&JAS_DocumentManager_op=viewDocument&JAS_Document_id=1
+    @param which_motor    Provide which motor to operate on
+    @return the last set command register value.
+  */
+  uint8_t  motorGetCommandRegB(Motor which_motor);
+  /**
+    Set the Command Register A
+    There are two command registers, A and B.
+
+		For more information on what register does, please refer to 'Motor Command Register Explained' section of EVShield-Advanced-Development-Guide.pdf from following url:
+		http://www.openelectrons.com/index.php?module=documents&JAS_DocumentManager_op=viewDocument&JAS_Document_id=1
+    @param which_motor    Provide which motor to operate on
+    @param value       The command register value to set
+    */
+  bool     motorSetCommandRegA(Motor which_motor, uint8_t value);
+  /**
+    Get the command register A
+
+		For more information on what register does, please refer to 'Motor Command Register Explained' section of EVShield-Advanced-Development-Guide.pdf from following url:
+		http://www.openelectrons.com/index.php?module=documents&JAS_DocumentManager_op=viewDocument&JAS_Document_id=1
+    @param which_motor    Provide which motor to operate on
+    @return the last set command register value.
+  */
+  uint8_t  motorGetCommandRegA(Motor which_motor);
+  
+  /** 
+  Get the current encoder position of the motor in degrees
+    @param which_motor    Provide which motor to operate on
+    @return              current encoder value
+  */
+  int32_t  motorGetEncoderPosition(Motor which_motor);
+  
+  /** 
+  Get the current status of the motor
+    @param which_motor    Provide which motor to operate on
+    @return  The current status of the motor.
+    This is a byte with various bits set based on motor's state.
+    Refer to User Guide for details of bits.
+  */  
+  uint8_t  motorGetStatusByte(Motor which_motor);
+  
+  /** 
+  Get the tasks that are running on the specific motor
+    @param which_motor    Provide which motor to operate on
+    @return  The task byte that's currently running for this motor.
+    (Currently only one task is supported.)
+  */
+  uint8_t  motorGetTasksRunningByte(Motor which_motor);
+  
+  /** 
+  Set the PID control factors for the encoders
+  All motors on this bank will use the same PID values.
+    @param Kp The proportionate factor of the PID.
+    @param Ki The integreal factor of the PID.
+    @param Kd The differential factor of the PID.
+  */
+  bool     motorSetEncoderPID(uint16_t Kp, uint16_t Ki, uint16_t Kd);
+  
+  /** 
+  Set the PID control factors for the speed of the motors
+  All motors on this bank will use the same PID values.
+    @param Kp The proportionate factor of the PID.
+    @param Ki The integreal factor of the PID.
+    @param Kd The differential factor of the PID.
+  */
+  bool     motorSetSpeedPID(uint16_t Kp, uint16_t Ki, uint16_t Kd);
+  
+  bool centerLedSetRGB(uint8_t R, uint8_t G, uint8_t B);
+
+  // Set the RGBLED that shows RGB color
+
+  bool    ledSetRGB(uint8_t R, uint8_t G, uint8_t B);
+  
+  /** 
+  Set how many times the PID controller is allowed to oscillate at the set point
+  Depending on your situation of load and power characteristics, your PID algorithm
+  may oscillate indefinitly trying to achieve it's target.
+  To prevent that from happening there is a limit set.
+    @param pass_count the maximum number of times the PID is allowed to cross it's target.
+  */
+  bool     motorSetPassCount(uint8_t pass_count);
+  
+  /** 
+  Set how far away from the set point the PID controller is allowed to oscillate (amplitude)
+  Depending on your situation of load and power characteristics, your PID algorithm
+  may oscillate above or below the target.
+    @param tolerance the maximum amplititude allowed.
+  */
+  bool     motorSetTolerance(uint8_t tolerance);
+  
+  /** 
+  Reset all the set values for the motors
+  Applies to all motors on this bank.
+  */
+  bool     motorReset();
+  
+  /** 
+  Start both motors at the same time to follow the set conditions
+  This will execute the commands specified in the command register on both motors at once.
+  */
+  bool     motorStartBothInSync();
+  
+  /** 
+  Reset the current encoder position to zero for the motor
+    @param which_motor    Provide which motor to operate on
+  */
+  bool     motorResetEncoder(Motor which_motor);
+  
+  /**
+  Set the speed, duration to run, and control for the motor through register A (or B)
+
+		For more information on what register does, please refer to 'Motor Command Register Explained' section of EVShield-Advanced-Development-Guide.pdf from following url:
+		http://www.openelectrons.com/index.php?module=documents&JAS_DocumentManager_op=viewDocument&JAS_Document_id=1
+    @param which_motors    Provide which motor(s) to operate on
+    @param speed          Speed value between 0 and 100
+    @param duration       time to run in seconds
+    @param control        command register value
+  */
+  bool     motorSetSpeedTimeAndControl(Motor which_motors, int speed,
+                                      uint8_t duration, uint8_t control);
+
+  /** 
+ This function sets the speed, the number of seconds, and
+ the control (a.k.a. command register A)
+
+		For more information on what register does, please refer to 'Motor Command Register Explained' section of EVShield-Advanced-Development-Guide.pdf from following url:
+		http://www.openelectrons.com/index.php?module=documents&JAS_DocumentManager_op=viewDocument&JAS_Document_id=1
+    @param which_motors    Provide which motor(s) to operate on
+    @param encoder        Target encoder position to achieve
+    @param speed          Speed value between 0 and 100
+    @param duration       time to run in seconds
+    @param control        command register value
+  */
+  bool     motorSetEncoderSpeedTimeAndControl(Motor which_motors,
+                                      long encoder, int speed,
+                                      uint8_t duration, uint8_t control);
+  
+  /**
+  Validate if the motor has finished running for the set time duration
+    @param which_motors    Provide which motor(s) to operate on
+    @return                0 when motor(s) has completed a timed move properly,
+    If the return value is non-zero, either motor has not finished yet or has encountered an error condition.
+  */
+  uint8_t     motorIsTimeDone(Motor which_motors);
+  
+  /**
+  Wait until the motor has finished running for its set respective time duration
+    @param which_motors    Provide which motor(s) to operate on
+    @return                function waits until when motor(s) has stopped, returns 0 if the set goal was achieved.
+    If the return value is non-zero, you should check for error condition such as stall.
+  */
+  uint8_t     motorWaitUntilTimeDone(Motor which_motors);
+  
+  /**
+  Validate if the motor has reached its set target tachometer position
+    @param which_motors    Provide which motor(s) to operate on
+    @return                0 when motor(s) has completed a encoder based move properly,
+    If the return value is non-zero, either motor has not finished yet or has encountered an error condition.
+  */
+  uint8_t     motorIsTachoDone(Motor which_motors);
+  
+  /** 
+  Wait until the motor has reached its set target tachometer position
+    @param which_motors    Provide which motor(s) to operate on
+    @return                function waits until when motor(s) has stopped, returns 0 if the set goal was achieved.
+    If the return value is non-zero, you should check for error condition such as stall.
+  */
+  uint8_t     motorWaitUntilTachoDone(Motor which_motors);
+  
+  /**
+  Run the motor endlessly at the desired speed in the desired direction
+   @param which_motors     specifiy the motor(s) to operate on
+   @param direction        specifiy the direction to run the motor
+   @param speed            the speed value (between 0 and 100)
+   @return  Starts the motors and function returns immediately
+  */
+  void     motorRun(Motor which_motors, Direction direction,
+                                      int speed);
+                                      
+  /** Run the motor for a set duration at a set speed and do the next action
+   @param which_motors     specifiy the motor(s) to operate on
+   @param direction        specifiy the direction to run the motor
+   @param speed            the speed value (between 0 and 100)
+   @param duration         in seconds
+   @param wait_for_completion    whether this API should wait for completion or not
+   @param next_action      for these motor being operated on
+   @return        0 if the operation was finished satisfactorily,
+            in case return value is non-zero you should check for the bits for error conditions.
+  */
+  uint8_t     motorRunSeconds(Motor which_motors, Direction direction,
+                                      int speed, uint8_t duration,
+                                      Completion_Wait wait_for_completion,
+                                      Next_Action next_action);
+                                      
+  /**
+  run until the tachometer target has been reached and do next action
+   @param which_motors     specifiy the motor(s) to operate on
+   @param direction        specifiy the direction to run the motor
+   @param speed            the speed value (between 0 and 100)
+   @param tachometer       the target for the encoder value to achieve.
+   @param relative         is the tachometer relative or absolute.
+   @param wait_for_completion    whether this API should wait for completion or not
+   @param next_action      for these motor being operated on
+   @return        0 if the operation was finished satisfactorily,
+            in case return value is non-zero you should check for the bits for error conditions.
+  */
+  uint8_t     motorRunTachometer(Motor which_motors, Direction direction,
+                                      int speed, long tachometer,
+                                      Move relative,
+                                      Completion_Wait wait_for_completion,
+                                      Next_Action next_action);
+                                      
+  /**
+  Run the motor for a set number of degrees and proceed to the next action
+   @param which_motors     specifiy the motor(s) to operate on
+   @param direction        specifiy the direction to run the motor
+   @param speed            the speed value (between 0 and 100)
+   @param degrees          The degrees the motor should turn through
+   @param wait_for_completion    whether this API should wait for completion or not
+   @param next_action      for these motor being operated on
+   @return        0 if the operation was finished satisfactorily,
+            in case return value is non-zero you should check for the bits for error conditions.
+  */
+  uint8_t     motorRunDegrees(Motor which_motors, Direction direction,
+                                      int  speed, long degrees,
+                                      Completion_Wait wait_for_completion,
+                                      Next_Action next_action);
+                                      
+  /**
+  Run the motor for a set number of complete rotations and proceed to the next action
+   @param which_motors     specifiy the motor(s) to operate on
+   @param direction        specifiy the direction to run the motor
+   @param speed            the speed value (between 0 and 100)
+   @param rotations        The rotations the motor should rotate through
+   @param wait_for_completion    whether this API should wait for completion or not
+   @param next_action      for these motor being operated on
+   @return        0 if the operation was finished satisfactorily,
+            in case return value is non-zero you should check for the bits for error conditions.
+  */
+  uint8_t     motorRunRotations(Motor which_motors, Direction direction,
+                                      int speed, long rotations,
+                                      Completion_Wait wait_for_completion,
+                                      Next_Action next_action);
+                                      
+  /**
+  stop the motor and do the next action
+   @param which_motors     specifiy the motor(s) to operate on
+   @param next_action      for these motor being operated on
+  */
+  bool     motorStop(Motor which_motors, Next_Action next_action);
+
+
+  //
+  // EVShield sensor functions.
+  //
+public:
+  /**
+  Set the sensor type of the sensor on this bank
+  @param  which_sensor the sensor to set the type to.
+  @param  sensor_type     type value of the sensor,
+  refer to Advanced User Guide for available values of sensor types.
+  */
+  bool     sensorSetType(uint8_t which_sensor, uint8_t sensor_type);
+  
+  /**
+  Read the raw analog value from the sensor and return as an int
+  @param  which_sensor the sensor to read the raw value from
+  @return   raw value from the sensor
+  */
+  int      sensorReadRaw(uint8_t which_sensor);
+
+};
+
+/**
+  @brief EVShield has two banks. Bank B has few differences from Bank A.
+  This class defines overriding methods for the EVShield Bank B.
+  */
+class EVShieldBankB : public EVShieldBank
+{
+private:
+
+public:
+  /** constructor for bank be of the EVShield; optional custom i2c address can be supplied */
+  EVShieldBankB(uint8_t i2c_address_b = Bank_B);
+  /**
+  Read the raw analog value from the sensor and return as an int
+  @param  which_sensor the sensor to read the raw value from
+  @return   raw value from the sensor
+  */
+  int      sensorReadRaw(uint8_t which_sensor);
+
+  /**
+  Set the sensor Type of the sensor on this bank
+  @param  which_sensor the sensor to set the type to.
+  @param  sensor_type     type value of the sensor,
+  refer to Advanced User Guide for available values of sensor types.
+  */
+  bool     sensorSetType(uint8_t which_sensor, uint8_t sensor_type);
+};
+
+
+/**
+  @brief This class defines methods to access EVShield features
+*/
+class EVShield
+{
+public:
+  /**
+  Global variable representing the i2c protocol to use; whether software or hardware
+  */
+  uint8_t m_protocol;
+  /** Variable for the bank_a of EVShield
+  */
+  EVShieldBank   bank_a;
+  /** Variable for the bank_b of EVShield
+  */
+  EVShieldBankB  bank_b;
+
+  /** class constructor for EVShield; optional custom i2c addresses may be supplied for both banks */
+  EVShield(uint8_t i2c_address_a = Bank_A,
+           uint8_t i2c_address_b = Bank_B);
+  
+  /**
+  the initialization of the EVShield; 
+	This function initializes the LED related timers, and communication protocols.
+  @param protocol optional, specify the i2c protocol to use for the EVShield and highspeed i2c port
+  */
+  void init(Protocols protocol=HardwareI2C);
+
+  /**
+  the initialization of the EVShield LED timers.
+  */
+	void initLEDTimers();
+
+  /**
+    the initialization of the EVShield I2C timer.
+  */
+	void I2CTimer();
+    
+  /**
+  the initialization of EVShield communication protocols.
+  @param protocol optional, specify the i2c protocol to use for the EVShield and highspeed i2c port
+  */
+	void initProtocols(Protocols protocol=HardwareI2C);
+
+  
+  /**
+  Get the button state of the specific button on EVShield.<br>
+  When using the Wi-Fi Arduino Interface for PiStorms, there is only a GO button.
+  The PiStorms does not have a left or right button like the EVShield. In this case,
+  the F1 software button will be BTN_LEFT, and F2 will be BTN_RIGHT. If a program
+  asks you to press the left button, instead tap the stylus in the F1 area on screen.
+  @param btn      Button to get state for (BTN_GO, BTN_LEFT, BTN_RIGHT)
+  @return true or false for specified button on the EVShield 
+  */
+  bool getButtonState(uint8_t btn);
+  
+  /** 
+  Wait inside function until specified button is pressed on EVShield (BTN_GO, BTN_LEFT, BTN_RIGHT)
+  @param btn      Button to get state for (BTN_GO, BTN_LEFT, BTN_RIGHT)
+  @param led_pattern   0 for LED off.
+  1 to brighten/lighten LED with breathing pattern (default).
+  2 to brighten/lighten LED with heart beat pattern.
+  */
+  void waitForButtonPress(uint8_t btn, uint8_t led_pattern=1);
+  
+
+  /**
+  Set the colors of LED on the EVShield;
+  The values of red, green, blue are between 0 to 255.
+  @param red      Intensity for red color (between 0 and 255)
+  @param green      Intensity for green color (between 0 and 255)
+  @param blue      Intensity for blue color (between 0 and 255)
+  */
+  void ledSetRGB(uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0);
+
+  /**
+    The LED is brightened and dimmed in a breathing pattern.
+    Call this function repeatedly to make the pattern.
+  */
+  void ledBreathingPattern();
+
+  /**
+    The LED is brightened and dimmed in a HeartBeat pattern.
+    Call this function repeatedly to make the pattern.
+  */
+  void ledHeartBeatPattern();
+  
+  /**
+  Wi-Fi Arduino Interface for PiStorms only!<br>
+  Read the touchscreen press and write the coordinates to the output parameters.
+  @param x x-value of touchscreen press is written to this variable
+  @param y y-value of touchscreen press is written to this variable
+  */
+  void getTouchscreenValues(uint16_t *x, uint16_t *y);
+  
+  /**
+  Wi-Fi Arduino Interface for PiStorms only!<br>
+  Reads the x-coordinate of the touchscreen press
+  */
+  uint16_t TS_X();
+  
+  /**
+  Wi-Fi Arduino Interface for PiStorms only!<br>
+  Reads the y-coordinate of the touchscreen press
+  */
+  uint16_t TS_Y();
+  
+  /**
+  Wi-Fi Arduino Interface for PiStorms only!<br>
+  Detect touchscreen presses and prevents false positives.
+  */
+  bool isTouched();
+  
+  /**
+  Wi-Fi Arduino Interface for PiStorms only!<br>
+  returns true if the specified area of the screen is being touched
+  */
+  bool checkButton(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+  
+  /**
+  Wi-Fi Arduino Interface for PiStorms only!<br>
+  returns 0 if none of the software buttons are touched, or 1-4 if one of them is.
+  */
+  uint8_t getFunctionButton();
+
+private:
+  /** touchscreen calibration values */
+  uint16_t x1, y1, x2, y2, x3, y3, x4, y4;
+  
+  /** read the raw x-coordinate of the touchscreen press */
+  uint16_t RAW_X();
+  
+  /** read the raw x-coordinate of the touchscreen press */
+  uint16_t RAW_Y();
+  
+  bool useOldTouchscreen = false;
+  
+  /** get raw touchscreen values, do some math using the calibration values, and write to the output parameters
+    @param x x-value of touchscreen press is written to this variable
+    @param y y-value of touchscreen press is written to this variable
+  */
+  void getReading(uint16_t *x, uint16_t *y);
+};
+
+/** This function formats an integer in binary format.
+  @param i 8 bit integer value
+  @param s returned string of the binary representation
+  */
+extern bool format_bin(uint8_t i, char *s);
+
+/**
+	EVShield Analog Sensor class.
+  */
+class EVShieldAGS
+{
+public:
+	/** pointer to the EVShield class instantiation used */
+	EVShield * mp_shield;
+	
+	/** bank port the analog device is connected to */
+	BankPort m_bp;
+	
+	/** null constructor for the EVShieldAGS class; need to init later */
+  EVShieldAGS();
+	
+	/** class constructor with pointed to EVShield and the bankport as a parameter; init is not needed */
+  EVShieldAGS(EVShield * shield, BankPort bp);
+	
+	/** set the type of the device on this port of the EVShield */
+  bool  setType(uint8_t type);
+	
+	/** read the raw analog value from the device and return as an integer */
+  int   readRaw();
+	
+	/** initialize the analog device with a pointed to the EVShield and the bank port it is connected to */
 	bool init(EVShield * shield, BankPort bp);
 
-	/** set the NXTLight sensor mode to reflected light mode (internal LED will be turned on) */
-	bool setReflected();
-	
-	/** set the NXTLight sensor mode to ambient light mode (internal LED will be turned off) */
-	bool setAmbient();
 };
 
 /**
-  This class interfaces with Lego Color sensor attached to EVShield.
+  @brief EVShield UART Sensor class.
+  also provides support for the EV3 Touch Sensor
  */
-class NXTColor {
+class EVShieldUART
+{
     public:
         /** pointer to the EVShield class instantiation used */
         EVShield * mp_shield;
 
-        /** bank port the device is connected to */
+        /** bank port the analog device is connected to */
         BankPort m_bp;
 
         /** the data for uart sensors is stored in the bank, and 
           there is a offset based on port */
         int m_offset;
 
-        /** null constructor for the class; need to init later */
-        NXTColor();
+        /** null constructor for the EVShieldUART class; need to init later */
+        EVShieldUART();
 
-        /** class constructor with pointer to EVShield and the bankport as a parameter; if object is instantiated using this constructor, init is not needed */
-        NXTColor(EVShield * shield, BankPort bp);
+        /** class constructor with pointer to EVShield and the bankport as a parameter; init is not needed */
+        EVShieldUART(EVShield * shield, BankPort bp);
+
+        /** get the mode of the sensor */
+        uint8_t	getMode( );
+
+        /** When the device is initially connected (or type is changed) it takes a while for the sensor to negotiate UART communication with host and be ready to provide readings. This funciton will return True if the sensor is ready, False if it is not ready*/
+        bool isDeviceReady();
 
         /** set the type of the device on this port of the EVShield */
         bool  setType(uint8_t type);
 
-        /** read the raw analog value from the device and return as an integer */
-        //int   readRaw();
+        /**  write a byte at the given location (selects appropriate bank) */
+        bool writeLocation(uint8_t loc, uint8_t data);
 
-        /** initialize the analog device with a pointer to the EVShield and the bank port it is connected to */
+        /** read integer value from specificed location */
+        int16_t readLocationInt(uint8_t loc);
+
+        /** read the value from the device at given location and return as an integer */
+        uint8_t readLocationByte(uint8_t loc);
+
+        /** initialize the analog device with a pointed to the EVShield and the bank port it is connected to */
         bool init(EVShield * shield, BankPort bp);
 
-        uint8_t readValue();
-        
-        uint8_t readColor();
-        
+        /** set mode of the sensor */
+        uint8_t  setMode(char newMode);
+
+        /** read sensor reading */
+        uint16_t	readValue();
+
+        /**  internal function to examine the buffer */
+        bool	readAndPrint(uint8_t loc, uint8_t len);
 };
 
-/**
-   This class interfaces with NXTCam attached to EVShield 
-  */
-class NXTCam : public EVShieldI2C
-{
-public:
-  /** class constructor for NXTCam with optional custom i2c address parameter */
-  NXTCam(uint8_t i2c_address = 0x02);
-  
-  /** issue character command byte to the command register of the NXTCam 
-   (command such as enable tracking, stop tracking, etc).  Refer to User Guide for available commands.
-*/
-  uint8_t    issueCommand(char command);
-  
-  /** sort the blobs from the NXTCam byt blobs */
-  bool    sortSize();
-  
-  /** configure the tracking mode of the device to object tracking */
-  bool    selectObjectMode();
-  
-  /** write to the image registers of the CCD */
-  bool    writeImageRegisters();
-  
-  /** disable tracking for the NXTCam */
-  bool    disableTracking();
-  
-  /** enable tracking for the NXTCam */
-  bool    enableTracking();
-  
-  /** get the current colormap of the NXTCam */
-  bool    getColorMap();
-  
-/** not impmemented yet */
-  bool    illuminationOn();
-  
-  /** read the image registers of the CCD */
-  bool    readImageRegisters();
-  
-  /** put the NXTCam in line tracking mode */
-  bool    selectLineMode();
-  
-  /** ping the NXTCam to test connection */
-  bool    pingCam();
-  
-  /** reset the NXTCam */
-  bool    resetCam();
-  
-  /** send ColorMap to the NXTCam */
-  bool    sendColorMap();
-  
-/** not impmemented yet */
-  bool    illuminationOff();
-  
-  /** sort the blobs by color */
-  bool    sortColor();
-  
-  /** clear any selected sort configuration */
-  bool    sortNone();
-  
-  /** get the firmware of the NXTCam */
-  bool    camFirmware();
-  
-  /** get the total number of objected tracked by the NXTCam */
-  int      getNumberObjects();
-  
-
-/**
-This function gets the blob information of all the blobs that NXTCam is tracking.
-There could be upto 8 blobs being tracked by NXTCam.
-All the parameters of this function are return values.
-This function will return color and coordinate information for all the blobs.
-  @param nblobs      In this variable, number of blobs NXTCam sees are returned.
-The blobs NXTCam sees could be of different color or same color.
-For e.g. if you have 3 colors defined, say red (color 1), blue (color 2) and green (color3), and you have 3 red objects and 2 blue objects and 1 green object in front of NXTCam, nblobs will be 6.
-color[]: a array of colors for the blobs
-in above example, Color array will have 6 valid elements - three bytes will say 1 (for color1), and 2 bytes will say (for color 2), and 1 byte will say 3 (for color 3).
-Based on sorting chosen, they will be sorted by size or color (if the sorting was color, first 3 bytes will be 1, next two will be 2 and next one will be 3).
-  @param color      a array of colors for the blobs (array has 8 elements)
-  @param left       the coordinate values of the blobs (array of 8 elements)
-  @param top        the coordinate values of the blobs (array of 8 elements)
-  @param right      the coordinate values of the blobs (array of 8 elements)
-  @param bottom     the coordinate values of the blobs (array of 8 elements)
-@return look at the nblobs first to see how many blobs are being tracked, and then read the respective color and coordinate infromation.
-*/
-  void    getBlobs(int *nblobs, uint8_t *color, uint8_t *left, uint8_t *top, uint8_t *right, uint8_t *bottom);
-};
-
-/**
-   This class interfaces with NXTCurrentMeter attached to EVShield 
-  */
-class CurrentMeter : public EVShieldI2C
-{
-public:
-	/** Constructor for the class; may supply an optional custom i2c address 	*/
-	CurrentMeter(uint8_t i2c_address = 0x28);
-	/** Write a command byte at the command register of the device */  
-	uint8_t	issueCommand(char command);
-	/** Get the Absolute Current  
-	 *  @return Absolute Current value*/
-	int	getACurrent();
-	/** Get the Relative Current  
-	 *  @return Relative Current value*/
-	int	getRCurrent();
-	/** Get the Reference Current  
-	 *  @return Reference Current value*/
-	int	getReference();
-	/** Set the Reference Current to Absolute Current */
-	int	setReferenceI();
-
-};
-
-/**
-   This class interfaces with NXTMMX attached to EVShield 
-  */
-class NXTMMX : public EVShieldI2C
-{
-public:
-	/** constructor for NXTMMX
-	*/
-  NXTMMX(uint8_t i2c_address = 0x06);
-  
-	/** get the battery voltage for the MMX */
-  uint8_t getBatteryVoltage();
-	
-	/** issue a command to this bank of the NXTMMX */
-  uint8_t issueCommand(char command);
-	
-	/** set the target encoder position for the motor */
-  bool setEncoderTarget(uint8_t which_motor, long target);
-	
-	/** get the target encoder position for the motor */
-  long getEncoderTarget(uint8_t which_motor);
-  
-	/** set the speed of the motor */
-	bool setSpeed(uint8_t which_motor, int speed);
-	
-	/** get the speed of the motor */
-	int8_t getSpeed(uint8_t which_motor);
-  
-	/** set the time in seconds for which the motor should run for */
-	bool getTimeToRun(uint8_t which_motor, int seconds);
-  
-	/** get the time in seconds that the motor is running for */
-	uint8_t getTimeToRun(uint8_t which_motor);
-  
-	bool setCommandRegB(uint8_t which_motor, uint8_t value);
-	uint8_t getCommandRegB(uint8_t which_motor);
-	bool setCommandRegA(uint8_t which_motor, uint8_t value);
-	uint8_t getCommandRegA(uint8_t which_motor);
-  
-	/** get the current encoder position of the motor in degrees */
-	int32_t getEncoderPosition(uint8_t which_motor);
-  
-	/** get the current status of the motor */
-	uint8_t getMotorStatusByte(uint8_t which_motor);
-  
-	/** get the tasks that are running on the specific motor */
-	uint8_t getMotorTasksRunningByte(uint8_t which_motor);
-  
-	/** set the PID control for the encoders */
-	bool setEncoderPID(uint16_t Kp, uint16_t Ki, uint16_t Kd);
-  
-	/** set the PID control for the speed of the motors */
-	bool setSpeedPID(uint16_t Kp, uint16_t Ki, uint16_t Kd);
-  
-	/** set how many times the PID controller is allowed to oscillate about the set point */
-	bool setPassCount(uint8_t pass_count);
-  
-	/** set how far away from the set point the PID controller is allowed to oscillate (amplitude) */
-	bool setTolerance(uint8_t tolerance);
-  
-	/** reset all the set values for the motors */
-	bool reset();
-  
-	/** start both motors at the same time to follow the set conditions */
-	bool startMotorsInSync();
-  
-	/** reset the current encoder position to zero for the motor */
-	bool resetEncoder(uint8_t which_motor);
-  
-	/** set the speed, duration to run, and control for the motor */
-	bool setSpeedTimeAndControl(uint8_t which_motors, int speed, uint8_t duration, uint8_t control);
-  
-	/** set the ratget encoder position, speed, duration to run, and control for the motor */
-	bool setEncoderSpeedTimeAndControl(uint8_t which_motors, long encoder, int speed, uint8_t duration, uint8_t control);
-  
-	/** validate if the motor has finished running for the set time duration */
-	bool isTimeDone(uint8_t which_motors);
-  
-	/** wait until the motor has finished running for its set respective time duration */
-	void waitUntilTimeDone(uint8_t which_motors);
-  
-	/** validate if the motor has reached its set target tachometer position */
-	bool isTachoDone(uint8_t which_motors);
-  
-	/** wait until the motor has reached its set target tachometer position */
-	void waitUntilTachoDone(uint8_t which_motors);
-  
-	/** run the motor endlessly at the desired speed in the desired direction */
-	void runUnlimited(uint8_t which_motors, uint8_t direction, int speed);
-  
-	/** run the motor for a set duration at a set speed and do the next action */
-	void runSeconds(uint8_t which_motors, uint8_t direction, int speed, uint8_t duration, uint8_t wait_for_completion, uint8_t next_action);
-  
-	/** run until the tachometer target has been reached and do next action */
-	void runTachometer(uint8_t which_motors, uint8_t direction, int speed, long tachometer, uint8_t relative, uint8_t wait_for_completion, uint8_t next_action);
-  
-	/** run the motor for a set number of degrees and proceed to the next action */
-	void runDegrees(uint8_t which_motors, uint8_t direction,int  speed, long degrees, uint8_t wait_for_completion, uint8_t next_action);
-  
-	/** run the motor for a set number of complete rotations and proceed to the next action */
-	void runRotations(  uint8_t which_motors, uint8_t direction, int speed, long rotations, uint8_t wait_for_completion, uint8_t next_action);
-  
-	/** stop the motor and do an action */
-	bool stop(uint8_t which_motors, uint8_t next_action);
-};
-
-/**
-   This class interfaces with NXTServo attached to EVShield 
-  */
-class NXTServo : public EVShieldI2C
-{
-public:
-	/** class constructor for the NXTServo with optional custom i2c address parameter */
-  NXTServo(uint8_t i2c_address = 0xb0);
-  
-	/** issue a character command byte to the command register of the NXTServo */
-  uint8_t issueCommand(char command);
-	
-	/** get the battery voltage supplied to the NXTServo */
-  uint8_t getBatteryVoltage();
-	
-	/** store current settings of the given servo to initial default setting and remember when powered on */
-  bool storeInitial(uint8_t number);
-	
-	/** reset all servos to default */
-  bool reset();
-	
-	/** stop the onboard macro on the NXTServo */
-  bool haltMacro();
-	
-	/** resume the onboard macro on the NXTServo */
-  bool resumeMacro();
-	
-	/** Go to given EEPROM position (This command re-initializes the macro environment) */
-  bool gotoEEPROM(uint8_t position);
-	
-	/** edit the onboard macro */
-  bool editMacro();
-	
-	/** temporarily pause the running macro */
-  bool pauseMacro();
-	
-	/** set the speed of a specified servo */
-  bool setSpeed(uint8_t number, uint8_t speed);
-	
-	/** set the position of a specified servo */
-  bool setPosition(uint8_t number, uint8_t position);
-	
-	/** run the specified to the specified position at the specified speed */
-  void runServo(uint8_t number, uint8_t position, uint8_t speed);
-
-};
-
-/**
-  This class interfaces with NXTThermometer attached to EVShield 
-	*/
-class NXTThermometer : public EVShieldI2C
-{
-public:
-	/** device constructor for NXTThermometer; custom i2c address is an optional parameter */
-  NXTThermometer(uint8_t i2c_address = 0x98);
-
-	/** issue a byte command to the command register of the device */
-  void    setMode(void);
-	
-		
-	/** get the Ambient Temperature  from the NXTThermometer in Celsius*/
-  float      getTemperature();
-  
-	
-	
-
-};
-
-/**
-  This class interfaces with NXTVoltMeter attached to EVShield 
-	*/
-class VoltMeter : public EVShieldI2C
-{
-public:
-	/** Constructor for the class; may supply an optional custom i2c address 	*/
-	VoltMeter(uint8_t i2c_address = 0x26);
-	/** Write a command byte at the command register of the device */  
-	uint8_t	issueCommand(char command);
-	/** Get the Absolute Voltage  
-	 *  @return Absolute Voltage value*/
-	int	getAVoltage();
-	/** Get the Relative Voltage  
-	 *  @return Relative Voltage value*/
-	int	getRVoltage();
-	/** Get the Reference Voltage  
-	 *  @return Reference Voltage value*/
-	int	getReference();
-	/** Set the Reference Voltage to current Absolute Voltage */
-	int	setReferenceV();
-
-};
 #endif
