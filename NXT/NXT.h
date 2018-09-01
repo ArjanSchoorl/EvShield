@@ -5,7 +5,6 @@
 #ifndef NXT_H
 #define NXT_H
 
-#include "EVShieldAGS.h"
 #include "EVShield.h"
 
 /**
