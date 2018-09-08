@@ -1,6 +1,6 @@
 //EVShield interface library for NXT Sensors
 
-#include "NXT.h"
+#include "EVLIB.h"
 
 /**
   This bool interfaces with LEGO Touch sensor attached to EVShield.
