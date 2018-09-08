@@ -2,8 +2,8 @@
  * EVShield interface library for NXT Sensors
 */
 
-#ifndef NXT_H
-#define NXT_H
+#ifndef EVLIB_H
+#define EVLIB_H
 
 #include "EVShield.h"
 
