@@ -522,4 +522,142 @@ public:
 	int	setReferenceV();
 
 };
+
+/**
+ * \enum MODE_Sonar, Modes supported by EV3 Sonar (Ultrasonic Sensor).
+ */
+typedef enum {
+  MODE_Sonar_CM     = 0x00,   /*!< Choose for measurements in centimeters */
+  MODE_Sonar_Inches     = 0x01,   /*!< Choose measurements in inches */
+  MODE_Sonar_Presence   = 0x02,   /*!< Choose to Listen for other ultrasonic devices */
+} MODE_Sonar;
+
+/**
+  @brief This class interfaces with LEGO EV3 Ultrasonic sensor attached to EVShield 
+	*/
+class EV3Ultrasonic : public EVShieldUART
+{
+public:
+    /** initialize the device and tell where it is connected */
+    bool init(EVShield * shield, BankPort bp);
+
+    /** get the distance to obstacle (in cm or inches based on the mode.)
+        use setMode() to change the mode as you need
+    */
+    float getDist();
+    
+    /** detect other ultrasonic devices */
+    uint8_t detect();
+};
+
+/**
+ * \enum MODE_Color, Modes supported by EV3 Color (Color Sensor).
+ */
+typedef enum {
+  MODE_Color_ReflectedLight     = 0x00,   /*!< Choose for measuring reflected light */
+  MODE_Color_AmbientLight     = 0x01,   /*!< Choose for measuring ambient light */
+  MODE_Color_DetectColor   = 0x02,     /*!< Choose for measuring color*/ 
+} MODE_Color;   
+
+/**
+  @brief This class interfaces with LEGO EV3 Color sensor attached to EVShield 
+	*/
+class EV3Color : public EVShieldUART
+{
+public:
+    /** initialize the device and tell where it is connected */
+    bool init(EVShield * shield, BankPort bp);
+
+    /** get the color value */
+    float getVal();
+};
+
+/**
+ * \enum MODE_Sonar, Modes supported by EV3 Sonar (Ultrasonic Sensor).
+ */
+typedef enum {
+  MODE_Gyro_Angle    = 0x00,   /*!< for Angle measurements */
+  MODE_Gyro_Rate     = 0x01   /*!< for rate of change measurement */
+
+} MODE_Gyro;
+
+/**
+  @brief This class interfaces with LEGO EV3 Gyro sensor attached to EVShield 
+	*/
+class EV3Gyro : public EVShieldUART
+{
+public:
+    bool init(EVShield * shield, BankPort bp);
+
+    /** get the angle of the Gyro sensor */
+    int getAngle();
+
+    /** reset the angle to zero */
+    int getRefAngle();
+
+    /** reset the angle to zero */
+    int setRef();
+};
+
+/**
+ * \enum MODE_Infrared, Modes supported by EV3 Infrared Sensor.
+ */
+typedef enum {
+  MODE_Infrared_Proximity     = 0x00,   /*!< for measuring Proximity with EV3 Infrared sensor */
+  MODE_Infrared_Beacon     = 0x01,   /*!< for measuring in Mode Beacon (returns 8 bytes values - 2 per channel) */
+  MODE_Infrared_Remote     = 0x02   /*!< for Remote mode  */
+
+} MODE_Infrared;
+
+/**
+  @brief This class interfaces with LEGO EV3 IR sensor attached to EVShield 
+	*/
+class EV3Infrared : public EVShieldUART
+{
+public:
+	/** check if the touch sensor is pressed */
+    bool init(EVShield * shield, BankPort bp);
+
+
+    /** for mode MODE_Infrared_Proximity */
+    uint16_t readProximity();
+
+    /** in mode: MODE_Infrared_Beacon  and MODE_InfraRed_Proximity */
+    int8_t readChannelHeading(uint8_t channel);
+
+    /** in mode: MODE_InfraRed_Proximity */
+    uint8_t readChannelProximity(uint8_t channel);
+
+    /** in mode MODE_Infrared_Remote */
+    uint8_t readChannelButton(uint8_t channel);
+};
+
+/**
+  @brief This class interfaces with LEGO EV3 Touch sensor attached to EVShield 
+	*/
+class EV3Touch : public EVShieldUART
+{
+public:
+    /** initialize the interface and tell the shield where the sensor is connected */
+    bool init(EVShield * shield, BankPort bp);
+
+	/** check if the touch sensor is pressed (or bumped) */
+    bool isPressed();
+
+    /** You can get bump count for EV3Touch Sensor (an incremental
+     pressed value) this function will return the bump count since last reset.
+     (The max value of bumpCount is 254, after that it will not increment).
+
+     Programming Tip:
+     If you don't want to wait to see if button is pressed, 
+     use this bump count,
+     store the old bumpCount in a variable and see if the new
+     bumpCount is larger than the old value.
+     */
+    int  getBumpCount();
+
+    /** reset the bump count and start the incremental bumps from zero */
+    bool resetBumpCount();
+};
+
 #endif
