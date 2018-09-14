@@ -849,3 +849,119 @@ int	VoltMeter::setReferenceV()
 {
 	return	issueCommand('d');
 }
+
+//EV3Ultrasonic
+bool EV3Ultrasonic::init(EVShield * shield, BankPort bp)
+{
+    EVShieldUART::init(shield, bp);
+    EVShieldUART::setType(Type_EV3);
+}
+
+float EV3Ultrasonic::getDist()
+{
+    uint16_t l, m;
+    float result;
+    result = readValue();
+    return (result/10);
+}
+
+uint8_t EV3Ultrasonic::detect()
+{
+    uint16_t l, m;
+    uint8_t result;
+    readAndPrint(0x81+m_offset, 10);
+    result = readValue();
+	return (result);
+}
+
+//EV3Color
+bool EV3Color::init(EVShield * shield, BankPort bp)
+{
+    EVShieldUART::init(shield, bp);
+    EVShieldUART::setType(Type_EV3);
+}
+
+float EV3Color::getVal()
+{
+    uint16_t l, m;
+    float result;
+    result = readValue();
+    return (result);
+}
+
+//EV3Gyro
+uint16_t ref = 0;
+
+bool EV3Gyro::init(EVShield * shield, BankPort bp)
+{
+    EVShieldUART::init(shield, bp);
+    EVShieldUART::setType(Type_EV3);
+}
+
+int EV3Gyro::getAngle()
+{
+    return readValue();
+}
+
+int EV3Gyro::getRefAngle()
+{
+    uint16_t refAngle = (readValue() - ref);
+    return refAngle;
+}
+
+int EV3Gyro::setRef()
+{
+    ref = readValue();
+} 
+
+//EV3Infrared
+bool EV3Infrared::init(EVShield * shield, BankPort bp)
+{
+    EVShieldUART::init(shield, bp);
+    EVShieldUART::setType(Type_EV3);
+}
+
+uint16_t EV3Infrared::readProximity()
+{
+    return readValue();
+}
+
+int8_t EV3Infrared::readChannelHeading(uint8_t channel)
+{
+    if ( channel < 0 || channel > 3) return -1;
+    return readLocationByte((0x81+(channel*2)+m_offset) );
+}
+
+uint8_t EV3Infrared::readChannelProximity(uint8_t channel)
+{
+    if ( channel < 0 || channel > 3) return -1;
+    return readLocationByte((0x82+(channel*2)+m_offset) );
+}
+
+uint8_t EV3Infrared::readChannelButton(uint8_t channel)
+{
+    if ( channel < 0 || channel > 3) return -1;
+    return readLocationByte((0x82+(channel)+m_offset) );
+}
+
+//EV3Touch
+bool EV3Touch::init(EVShield * shield, BankPort bp)
+{
+    EVShieldUART::init(shield, bp);
+    EVShieldUART::setType(Type_EV3_SWITCH);
+}
+
+bool EV3Touch::isPressed()
+{
+    return ( readLocationByte(0x83+m_offset) );
+}
+
+int  EV3Touch::getBumpCount()
+{
+    return (readLocationByte(0x84+m_offset));
+}
+
+bool  EV3Touch::resetBumpCount()
+{
+    return (writeLocation(0x84+m_offset, 0));
+}
