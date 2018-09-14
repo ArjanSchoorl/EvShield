@@ -1,5 +1,6 @@
 # EvShield
 Library for NXT/EV3 Shield for Arduino
+http://www.mindsensors.com/arduino/16-evshield-for-arduino-duemilanove-or-uno
 
 # V1.4
 - Added EV3 Touch Sensor
