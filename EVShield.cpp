@@ -2238,7 +2238,6 @@ uint8_t SoftI2cMaster::readByte(uint8_t location)
 // read integer, total of 2 bytes or 16 bits
 int16_t SoftI2cMaster::readInteger(uint8_t location)
 {
-
   if (readRegisters(location, 2) != false)
   {
     return _so_buffer[0] | (_so_buffer[1] << 8);
@@ -2252,7 +2251,6 @@ int16_t SoftI2cMaster::readInteger(uint8_t location)
 // read long integer, total of 4 bytes or 32 bits
 uint32_t SoftI2cMaster::readLong(uint8_t location)
 {
-
   if (readRegisters(location, 4) != false)
   {
     return (uint32_t)_so_buffer[0] |

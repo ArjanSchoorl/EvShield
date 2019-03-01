@@ -518,7 +518,6 @@ private:
 	*/
 class SoftI2cMaster
 {
-
   bool initialized;
 
 private:
