@@ -1,6 +1,6 @@
 // Add all required libraries
 #include <EVShield.h>
-#include <EVLib.h>
+#include <LegoLib.h>
 #include <Wire.h>
 
 // Create variables to use in this program
