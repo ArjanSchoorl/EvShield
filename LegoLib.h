@@ -1,9 +1,9 @@
 /*
- * EVShield interface library for NXT Sensors
+ * EVShield interface library for NXT & EV3 Sensors
 */
 
-#ifndef EVLIB_H
-#define EVLIB_H
+#ifndef LEGOLIB_H
+#define LEGOLIB_H
 
 #include "EVShield.h"
 
@@ -143,11 +143,17 @@
 
 //NXTVoltMeter
 #define VM_Command 0x41
-
 #define ABSOLUTE_V 0X43
 #define RELATIVE_V 0x45
-
 #define REFERENCE_V 0X47
+
+//SensorMux
+#define ESA_Command 0x41
+
+//NXTCam
+#define Cam_Command 0x41
+#define Cam_Number_Objects 0x42
+#define Start_Reg 0x43
 
 /**
   This class interfaces with LEGO NXT Touch sensor attached to EVShield 
@@ -650,6 +656,26 @@ public:
 
   /** reset the bump count and start the incremental bumps from zero */
   bool resetBumpCount();
+};
+
+/**
+ * This class interfaces with sensor attached to NXShield 
+ */
+class EV3SensorMux : public EVShieldI2C
+{
+public:
+  /** Constructor for the class; may supply an optional custom i2c address 	*/
+  EV3SensorMux(uint8_t i2c_address = 0x32);
+  /** Write a command byte at the command register of the device */
+  uint8_t issueCommand(char command);
+  /** The EV3 sensors have different modes, you can change the mode of attached sensor with this function. To learn what all modes are availale, refer to LEGO's documentation */
+  uint8_t setMode(char newMode);
+  /** it is possible to read back the mode that was set last time.
+    use getMode to read the current mode */
+  byte getMode();
+  /** Read the value from the sensor attached to EV3SensorMux
+    */
+  int readValue();
 };
 
 #endif
