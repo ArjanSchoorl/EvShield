@@ -2,8 +2,8 @@
  * EVShield interface library for NXT & EV3 Sensors
 */
 
-#ifndef LEGOLIB_H
-#define LEGOLIB_H
+#ifndef EVLIB_H
+#define EVLIB_H
 
 #include "EVShield.h"
 
