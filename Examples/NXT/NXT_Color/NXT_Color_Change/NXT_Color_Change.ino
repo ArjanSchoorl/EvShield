@@ -4,19 +4,20 @@
 #include <Wire.h>
 
 // Create variables to use in this program
-EVShield    evshield(0x34,0x36);
-NXTColor    Color;
+EVShield evshield(0x34, 0x36);
+NXTColor Color;
 
-void setup() {
+void setup()
+{
   // Start Serial for output
   Serial.begin(115200);
-  
+
   // Initialize the shield i2c interface
   // And initialize the sensor(s) and indicate where it is connected
   evshield.init(HardwareI2C);
   Color.init(&evshield, BAS1);
   Color.setType(Type_COLORNONE);
-  
+
   Serial.println("Setup done");
 
   // Wait until the Go button has been pressed
@@ -24,14 +25,15 @@ void setup() {
   evshield.waitForButtonPress(BTN_GO);
 }
 
-void loop() {
+void loop()
+{
   // Color red
   Color.setType(Type_COLORRED);
   Serial.println("Red");
   delay(1000);
 
   // Color green
-  Color.setType(Type_COLORGREEN); 
+  Color.setType(Type_COLORGREEN);
   Serial.println("Green");
   delay(1000);
 

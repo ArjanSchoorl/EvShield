@@ -2,6 +2,67 @@
 
 #include "MindsensorsLib.h"
 
+AbsoluteIMU::AbsoluteIMU(uint8_t i2c_address)
+ : EVShieldI2C(i2c_address)
+{
+
+}
+
+uint8_t	AbsoluteIMU::issueCommand(char command)
+{
+	return	writeByte(IMU_Command, (uint8_t) command);
+}
+
+void AbsoluteIMU::readGyro(gyro &currgyro)
+{
+	char *b;
+	char str[200];
+ 	b = readString(0x53, 6);
+	currgyro.gx = readIntFromBuffer((uint8_t *)&b[0]);
+	currgyro.gy = readIntFromBuffer((uint8_t *)&b[2]);
+	currgyro.gz = readIntFromBuffer((uint8_t *)&b[4]);
+	currgyro.error = getErrorCode();
+}
+
+void AbsoluteIMU::readCompass(cmps &currcmps)
+{
+	char str[200];
+ 	currcmps.heading = readInteger(0x4b);
+	currcmps.error = getErrorCode();
+}
+
+void AbsoluteIMU::readAccelerometer(accl &currAccl)
+{
+	char *b;
+	char str[200];
+ 	currAccl.tx = readByte(0x42);
+	currAccl.ty = readByte(0x43);
+	currAccl.tz = readByte(0x44);
+	b = readString(0x45, 6);
+	currAccl.ax = readIntFromBuffer((uint8_t *)&b[0]);
+	currAccl.ay = readIntFromBuffer((uint8_t *)&b[2]);
+	currAccl.az = readIntFromBuffer((uint8_t *)&b[4]);
+	currAccl.error = getErrorCode();
+}
+void AbsoluteIMU::readMagneticField(magnetic_field &currmagnetic_field)
+{
+	char *b;
+	char str[200];
+ 	b = readString(0x4d, 6);
+	currmagnetic_field.mx = readIntFromBuffer((uint8_t *)&b[0]);
+	currmagnetic_field.my = readIntFromBuffer((uint8_t *)&b[2]);
+	currmagnetic_field.mz = readIntFromBuffer((uint8_t *)&b[4]);
+	currmagnetic_field.error = getErrorCode();
+}
+bool AbsoluteIMU::beginCompassCalibration()
+{
+	return issueCommand('C');
+}
+bool AbsoluteIMU::endCompassCalibration()
+{
+	return issueCommand('c');
+}
+
 /**
  This bool interfaces with mindsensors Angle sensor attached to EVShield
  */
@@ -10,7 +71,7 @@ AngleSensor::AngleSensor(uint8_t i2c_address)
 {
 }
 
-long EAngleSensor::getAngle()
+long AngleSensor::getAngle()
 {
     return readLong(ANGLE);
 }
@@ -301,7 +362,7 @@ uint8_t LineLeader::getKdFactor(uint8_t kdfact)
     return readByte(LineLeader_Kd);
 }
 
-bool _LineLeader::setKdFactor(uint8_t kdfact)
+bool LineLeader::setKdFactor(uint8_t kdfact)
 {
     return writeByte(LineLeader_Kd_Factor, (uint8_t)kdfact);
 }
@@ -701,7 +762,7 @@ uint8_t RTC::getYear()
     return BCDToInteger(readByte(RTC_Year));
 }
 
-bool SumoEyes::init(EVShield *shield, SH_BankPort bp)
+bool SumoEyes::init(EVShield *shield, BankPort bp)
 {
     EVShieldAGS::init(shield, bp);
 }
@@ -715,28 +776,28 @@ bool SumoEyes::setType(int8_t type)
         return false;
     switch (m_bp)
     {
-    case SH_BAS1:
-        return mp_shield->bank_a.sensorSetType(SH_S1, type);
+    case BAS1:
+        return mp_shield->bank_a.sensorSetType(S1, type);
 
-    case SH_BAS2:
-        return mp_shield->bank_a.sensorSetType(SH_S2, type);
+    case BAS2:
+        return mp_shield->bank_a.sensorSetType(S2, type);
 
-    case SH_BBS1:
-        return mp_shield->bank_b.sensorSetType(SH_S1, type);
+    case BBS1:
+        return mp_shield->bank_b.sensorSetType(S1, type);
 
-    case SH_BBS2:
-        return mp_shield->bank_b.sensorSetType(SH_S2, type);
+    case BBS2:
+        return mp_shield->bank_b.sensorSetType(S2, type);
     }
 }
 
 bool SumoEyes::setShortRange()
 {
-    return setType(SH_Type_LIGHT_AMBIENT);
+    return setType(Type_LIGHT_AMBIENT);
 }
 
 bool SumoEyes::setLongRange()
 {
-    return setType(SH_Type_LIGHT_REFLECTED);
+    return setType(Type_LIGHT_REFLECTED);
 }
 
 bool SumoEyes::isNear(int reference, int delta, int comet)
