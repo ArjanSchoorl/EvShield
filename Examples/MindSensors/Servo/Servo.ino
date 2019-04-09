@@ -2,6 +2,7 @@
 #include <EVShield.h>
 #include <MindsensorsLib.h>
 #include <Wire.h>
+#include <Servo.h>
 
 // Create variables to use in this program
 EVShield evshield(0x34, 0x36);
