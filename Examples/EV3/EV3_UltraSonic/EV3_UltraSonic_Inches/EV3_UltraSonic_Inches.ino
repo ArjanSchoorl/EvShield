@@ -4,28 +4,30 @@
 #include <Wire.h>
 
 // Create variables to use in this program
-EVShield    evshield(0x34,0x36);
+EVShield evshield(0x34, 0x36);
 EV3Ultrasonic US;
 
-void setup() {
+void setup()
+{
   // Start Serial for output
   Serial.begin(115200);
-  
+
   // Initialize the shield i2c interface
   // And initialize the sensor(s) and indicate where it is connected
   evshield.init(HardwareI2C);
   US.init(&evshield, BAS1);
   US.setMode(MODE_Sonar_Inches);
-  
+
   Serial.println("Setup done");
   Serial.println("Move object back and forth in front of ultrasonic sensor");
-  
+
   // Wait until the Go button has been pressed
   Serial.println("Press Go button");
   evshield.waitForButtonPress(BTN_GO);
 }
 
-void loop() {
+void loop()
+{
   // Create variable(s)
   int val;
 
@@ -33,6 +35,7 @@ void loop() {
   val = US.getDist();
 
   // Print the sensor values
-  Serial.print("Distance in inches: "); Serial.println(val);
+  Serial.print("Distance in inches: ");
+  Serial.println(val);
   delay(1000);
 }

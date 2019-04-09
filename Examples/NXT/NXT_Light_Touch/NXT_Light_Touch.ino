@@ -4,14 +4,15 @@
 #include <Wire.h>
 
 // Create variables to use in this program
-EVShield    evshield(0x34,0x36);
-NXTTouch    Touch;
-NXTLight    Light;
+EVShield evshield(0x34, 0x36);
+NXTTouch Touch;
+NXTLight Light;
 
-void setup() {
+void setup()
+{
   // Start Serial for output
   Serial.begin(115200);
-  
+
   // Initialize the shield i2c interface
   // And initialize the sensor(s) and indicate where it is connected
   evshield.init(HardwareI2C);
@@ -26,7 +27,8 @@ void setup() {
   evshield.waitForButtonPress(BTN_GO);
 }
 
-void loop() {
+void loop()
+{
   // Create variable(s)
   int touchPressed;
   int lightval;
@@ -36,16 +38,19 @@ void loop() {
   lightval = Light.readRaw();
 
   // Check if touchsensor is pressed
-  if (touchPressed == true){
-      Serial.println("Changing light sensor to reflected light mode");
-      Light.setReflected();
+  if (touchPressed == true)
+  {
+    Serial.println("Changing light sensor to reflected light mode");
+    Light.setReflected();
   }
-  else{
-      Serial.println("Changing light sensor to ambient light mode");
-      Light.setAmbient();
+  else
+  {
+    Serial.println("Changing light sensor to ambient light mode");
+    Light.setAmbient();
   }
 
   // Print the value of the light sensor
-  Serial.print("Light value:"); Serial.println(lightval);
+  Serial.print("Light value:");
+  Serial.println(lightval);
   delay(1000);
 }

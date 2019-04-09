@@ -1,6 +1,6 @@
-//EVShield interface library for NXT Sensors
+//EVShield interface library for NXT & EV3 Sensors
 
-#include "EVLIB.h"
+#include "EVLib.h"
 
 /**
   This bool interfaces with LEGO Touch sensor attached to EVShield.
@@ -965,4 +965,36 @@ int EV3Touch::getBumpCount()
 bool EV3Touch::resetBumpCount()
 {
 	return (writeLocation(0x84 + m_offset, 0));
+}
+
+/**
+ * This bool interfaces with sensor attached to NXShield 
+ */
+EV3SensorMux::EV3SensorMux(uint8_t i2c_address)
+		: EVShieldI2C(i2c_address)
+{
+}
+
+uint8_t EV3SensorMux::issueCommand(char command)
+{
+	return writeByte(ESA_Command, (uint8_t)command);
+}
+
+byte EV3SensorMux::getMode()
+{
+	byte buf[17];
+	readRegisters(0x52, 2, buf);
+	return (buf[0]);
+}
+
+uint8_t EV3SensorMux::setMode(char newMode)
+{
+	return writeByte(0x52, (uint8_t)newMode);
+}
+
+int EV3SensorMux::readValue()
+{
+	byte buf[17];
+	readRegisters(0x54, 2, buf);
+	return (buf[0] + (buf[1] * 0x100));
 }
