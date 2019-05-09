@@ -285,7 +285,7 @@ public:
 
   /**
 This function gets the blob information of all the blobs that NXTCam is tracking.
-There could be upto 8 blobs being tracked by NXTCam.
+There could be up to 8 blobs being tracked by NXTCam.
 All the parameters of this function are return values.
 This function will return color and coordinate information for all the blobs.
   @param nblobs      In this variable, number of blobs NXTCam sees are returned.
@@ -299,7 +299,7 @@ Based on sorting chosen, they will be sorted by size or color (if the sorting wa
   @param top        the coordinate values of the blobs (array of 8 elements)
   @param right      the coordinate values of the blobs (array of 8 elements)
   @param bottom     the coordinate values of the blobs (array of 8 elements)
-@return look at the nblobs first to see how many blobs are being tracked, and then read the respective color and coordinate infromation.
+@return look at the nblobs first to see how many blobs are being tracked, and then read the respective color and coordinate information.
 */
   void getBlobs(int *nblobs, uint8_t *color, uint8_t *left, uint8_t *top, uint8_t *right, uint8_t *bottom);
 };
@@ -668,7 +668,7 @@ public:
   EV3SensorMux(uint8_t i2c_address = 0x32);
   /** Write a command byte at the command register of the device */
   uint8_t issueCommand(char command);
-  /** The EV3 sensors have different modes, you can change the mode of attached sensor with this function. To learn what all modes are availale, refer to LEGO's documentation */
+  /** The EV3 sensors have different modes, you can change the mode of attached sensor with this function. To learn what all modes are available, refer to LEGO's documentation */
   uint8_t setMode(char newMode);
   /** it is possible to read back the mode that was set last time.
     use getMode to read the current mode */

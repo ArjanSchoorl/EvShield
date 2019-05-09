@@ -1491,7 +1491,7 @@ uint8_t EVShield::getFunctionButton()
   if (y >= ymin + 4 * yQuarter)
     return 0; // too high
 
-  return 0; // some other weird error occured, execution should not reach this point
+  return 0; // some other weird error occurred, execution should not reach this point
 #else
   return 0;
 #endif

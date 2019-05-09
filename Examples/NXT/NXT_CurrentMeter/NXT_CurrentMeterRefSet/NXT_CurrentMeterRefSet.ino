@@ -23,7 +23,7 @@ void setup()
   Serial.println("Press Go button");
   evshield.waitForButtonPress(BTN_GO);
 
-  // Sets the Referene Currunt to Absolute Current
+  // Sets the Reference Currunt to Absolute Current
   im.setReferenceI();
 }
 

@@ -485,7 +485,7 @@ public:
   /** returns the error code for an error with the Wire.h library on the i2c bus */
   uint8_t getWriteErrorCode();
 
-  /** return the firware version id of the device */
+  /** return the firmware version id of the device */
   char *getFirmwareVersion();
 
   /** return the name of the vendor for the device */
@@ -724,7 +724,7 @@ public:
     The voltage reported by this function is actual voltage at VIN pin on Arduino
     This will be lower than your supply voltage due to drops at various points in the circuit.
     The drop will be different based on where the power source is connected.
-    (i.e. source through EVShield Green connector Vs Arduino black adapater Vs Arduino USB.)
+    (i.e. source through EVShield Green connector Vs Arduino black adapter Vs Arduino USB.)
     */
   int evshieldGetBatteryVoltage();
 
@@ -873,7 +873,7 @@ public:
   /** 
   Set how many times the PID controller is allowed to oscillate at the set point
   Depending on your situation of load and power characteristics, your PID algorithm
-  may oscillate indefinitly trying to achieve it's target.
+  may oscillate indefinitely trying to achieve it's target.
   To prevent that from happening there is a limit set.
     @param pass_count the maximum number of times the PID is allowed to cross it's target.
   */
@@ -968,8 +968,8 @@ public:
 
   /**
   Run the motor endlessly at the desired speed in the desired direction
-   @param which_motors     specifiy the motor(s) to operate on
-   @param direction        specifiy the direction to run the motor
+   @param which_motors     specify the motor(s) to operate on
+   @param direction        specify the direction to run the motor
    @param speed            the speed value (between 0 and 100)
    @return  Starts the motors and function returns immediately
   */
@@ -977,8 +977,8 @@ public:
                 int speed);
 
   /** Run the motor for a set duration at a set speed and do the next action
-   @param which_motors     specifiy the motor(s) to operate on
-   @param direction        specifiy the direction to run the motor
+   @param which_motors     specify the motor(s) to operate on
+   @param direction        specify the direction to run the motor
    @param speed            the speed value (between 0 and 100)
    @param duration         in seconds
    @param wait_for_completion    whether this API should wait for completion or not
@@ -993,8 +993,8 @@ public:
 
   /**
   run until the tachometer target has been reached and do next action
-   @param which_motors     specifiy the motor(s) to operate on
-   @param direction        specifiy the direction to run the motor
+   @param which_motors     specify the motor(s) to operate on
+   @param direction        specify the direction to run the motor
    @param speed            the speed value (between 0 and 100)
    @param tachometer       the target for the encoder value to achieve.
    @param relative         is the tachometer relative or absolute.
@@ -1011,8 +1011,8 @@ public:
 
   /**
   Run the motor for a set number of degrees and proceed to the next action
-   @param which_motors     specifiy the motor(s) to operate on
-   @param direction        specifiy the direction to run the motor
+   @param which_motors     specify the motor(s) to operate on
+   @param direction        specify the direction to run the motor
    @param speed            the speed value (between 0 and 100)
    @param degrees          The degrees the motor should turn through
    @param wait_for_completion    whether this API should wait for completion or not
@@ -1027,8 +1027,8 @@ public:
 
   /**
   Run the motor for a set number of complete rotations and proceed to the next action
-   @param which_motors     specifiy the motor(s) to operate on
-   @param direction        specifiy the direction to run the motor
+   @param which_motors     specify the motor(s) to operate on
+   @param direction        specify the direction to run the motor
    @param speed            the speed value (between 0 and 100)
    @param rotations        The rotations the motor should rotate through
    @param wait_for_completion    whether this API should wait for completion or not
@@ -1043,7 +1043,7 @@ public:
 
   /**
   stop the motor and do the next action
-   @param which_motors     specifiy the motor(s) to operate on
+   @param which_motors     specify the motor(s) to operate on
    @param next_action      for these motor being operated on
   */
   bool motorStop(Motor which_motors, Next_Action next_action);
@@ -1296,7 +1296,7 @@ public:
   /** get the mode of the sensor */
   uint8_t getMode();
 
-  /** When the device is initially connected (or type is changed) it takes a while for the sensor to negotiate UART communication with host and be ready to provide readings. This funciton will return True if the sensor is ready, False if it is not ready*/
+  /** When the device is initially connected (or type is changed) it takes a while for the sensor to negotiate UART communication with host and be ready to provide readings. This function will return True if the sensor is ready, False if it is not ready*/
   bool isDeviceReady();
 
   /** set the type of the device on this port of the EVShield */
@@ -1305,7 +1305,7 @@ public:
   /**  write a byte at the given location (selects appropriate bank) */
   bool writeLocation(uint8_t loc, uint8_t data);
 
-  /** read integer value from specificed location */
+  /** read integer value from specified location */
   int16_t readLocationInt(uint8_t loc);
 
   /** read the value from the device at given location and return as an integer */
