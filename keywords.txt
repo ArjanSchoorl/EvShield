@@ -28,7 +28,7 @@ EVShield	KEYWORD1
 NXTCam	KEYWORD1
 NXTColor	KEYWORD1
 NXTLight	KEYWORD1
-NXTMMX		KEYWORD1
+NXTMMX	KEYWORD1
 NXTServo	KEYWORD1
 NXTTouch	KEYWORD1
 PFMate	KEYWORD1
@@ -57,7 +57,7 @@ PFMate	KEYWORD2
 PSPNx	KEYWORD2
 RTC	KEYWORD2
 MindsensorsLib	KEYWORD2
-OBZoneToString		KEYWORD2
+OBZoneToString	KEYWORD2
 SoftI2cMaster	KEYWORD2
 _buffer	KEYWORD2
 adpaOff	KEYWORD2
@@ -85,7 +85,7 @@ directMode	KEYWORD2
 disableTracking	KEYWORD2
 editMacro	KEYWORD2
 enableTracking	KEYWORD2
-energize		KEYWORD2
+energize	KEYWORD2
 getAddress	KEYWORD2
 getAngle	KEYWORD2
 getAverage	KEYWORD2
@@ -139,12 +139,12 @@ getWriteErrorCode	KEYWORD2
 getXAccl	KEYWORD2
 getXLJoy	KEYWORD2
 getXRJoy	KEYWORD2
-getXTilt		KEYWORD2
+getXTilt	KEYWORD2
 getYAccl	KEYWORD2
 getYear	KEYWORD2
 getYLJoy	KEYWORD2
 getYRJoy	KEYWORD2
-getYTilt		KEYWORD2
+getYTilt	KEYWORD2
 getZAccl	KEYWORD2
 getZTilt	KEYWORD2
 gotoEEPROM	KEYWORD2
@@ -200,10 +200,10 @@ readChannelHeading	KEYWORD2
 readChannelProximity	KEYWORD2
 readChannelButton	KEYWORD2
 readColor	KEYWORD2
-readButtonValue		KEYWORD2
+readButtonValue	KEYWORD2
 readByte	KEYWORD2
 readCapacityUsed	KEYWORD2
-readElapsedTime		KEYWORD2
+readElapsedTime	KEYWORD2
 readImageRegisters	KEYWORD2
 readInteger	KEYWORD2
 readLong	KEYWORD2
@@ -250,7 +250,7 @@ setControl	KEYWORD2
 setDigitalMode	KEYWORD2
 setEncoderPID	KEYWORD2
 setEncoderSpeedTimeAndControl	KEYWORD2
-setEncoderTarget		KEYWORD2
+setEncoderTarget	KEYWORD2
 setKd	KEYWORD2
 setKdFactor	KEYWORD2
 setKi	KEYWORD2
@@ -258,7 +258,7 @@ setKiFactor	KEYWORD2
 setKp	KEYWORD2
 setKpFactor	KEYWORD2
 setLongRange	KEYWORD2
-setMode		KEYWORD2
+setMode	KEYWORD2
 setModifier	KEYWORD2
 setOperationA	KEYWORD2
 setOperationB	KEYWORD2
@@ -267,7 +267,7 @@ setPassive	KEYWORD2
 setPosition	KEYWORD2
 setRef	KEYWORD2
 setReflected	KEYWORD2
-setColorDetect  KEYWORD2
+setColorDetect	KEYWORD2
 setSetPoint	KEYWORD2
 setShortRange	KEYWORD2
 setSpeed	KEYWORD2
@@ -320,26 +320,26 @@ setReferenceV	KEYWORD2
 getAngle	KEYWORD2
 getRawReading	KEYWORD2
 getButtonState	KEYWORD2
-getTemperature  KEYWORD2
-NXTThermometer  KEYWORD2
-sortSize    KEYWORD2
-selectObjectMode    KEYWORD2
-writeImageRegisters KEYWORD2
-disableTracking KEYWORD2
-enableTracking  KEYWORD2
-getColorMap KEYWORD2
-illuminationOn  KEYWORD2
-readImageRegisters  KEYWORD2
-selectLineMode  KEYWORD2
-pingCam KEYWORD2
-resetCam    KEYWORD2
-sendColorMap    KEYWORD2
-illuminationOff KEYWORD2
-sortColor   KEYWORD2
-sortNone    KEYWORD2
-camFirmware KEYWORD2
-getNumberObjects    KEYWORD2
-getBlobs    KEYWORD2
+getTemperature	KEYWORD2
+NXTThermometer	KEYWORD2
+sortSize	KEYWORD2
+selectObjectMode	KEYWORD2
+writeImageRegisters	KEYWORD2
+disableTracking	KEYWORD2
+enableTracking	KEYWORD2
+getColorMap	KEYWORD2
+illuminationOn	KEYWORD2
+readImageRegisters	KEYWORD2
+selectLineMode	KEYWORD2
+pingCam	KEYWORD2
+resetCam	KEYWORD2
+sendColorMap	KEYWORD2
+illuminationOff	KEYWORD2
+sortColor	KEYWORD2
+sortNone	KEYWORD2
+camFirmware	KEYWORD2
+getNumberObjects	KEYWORD2
+getBlobs	KEYWORD2
 
 
 #######################################
@@ -477,7 +477,7 @@ PSPNx_XLeftJoystick	LITERAL1
 PSPNx_XRightJoystick	LITERAL1
 PSPNx_YLeftJoystick	LITERAL1
 PSPNx_YRightJoystick	LITERAL1
-RTC_Day_of_Month		LITERAL1
+RTC_Day_of_Month	LITERAL1
 RTC_Day_of_Week	LITERAL1
 RTC_H	LITERAL1
 RTC_Hours	LITERAL1
@@ -569,7 +569,7 @@ Motor_2	LITERAL1
 Motor_Both	LITERAL1
 Move_Absolute	LITERAL1
 Move_Relative	LITERAL1
-Next_Action		LITERAL1
+Next_Action	LITERAL1
 Next_Action_Brake	LITERAL1
 Next_Action_BrakeHold	LITERAL1
 Next_Action_Float	LITERAL1
